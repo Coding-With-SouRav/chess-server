@@ -1,0 +1,1123 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="color-scheme" content="light">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <title>Royal Chess — Fluid Board · Image Pieces</title>
+  <link
+    href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;14..32,400;14..32,500;14..32,600;14..32,700&family=Playfair+Display:wght@500;600;700&display=swap"
+    rel="stylesheet">
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    html {
+      color-scheme: light !important;
+      filter: none !important;
+      -webkit-filter: none !important;
+    }
+
+
+    :root {
+      --bg-dark: #0a0c12;
+      --bg-card: rgba(22, 26, 35, 0.88);
+      --border-glow: rgba(212, 175, 55, 0.3);
+      --gold: #d4af37;
+      --gold-dim: #b8932c;
+      --light-sq: #f0e2b6;
+      --dark-sq: #6b4c3b;
+      --light-sq-hi: #ffe18a;
+      --dark-sq-hi: #d4a259;
+      --text-light: #ece9e0;
+      --text-muted: #9a8e7a;
+      --shadow-sm: 0 10px 30px rgba(0, 0, 0, 0.3);
+      --shadow-lg: 0 20px 40px rgba(0, 0, 0, 0.4);
+      --radius-md: 1rem;
+      --radius-sm: 0.75rem;
+    }
+
+    html {
+      font-size: clamp(13px, 1.8vw, 19px);
+      overflow-x: hidden;
+    }
+
+
+
+    body {
+      background: radial-gradient(circle at 20% 30%, #11141e, #07090e);
+      font-family: 'Inter', sans-serif;
+      font-size: 1rem;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: clamp(0.6rem, 2vh, 1.2rem) clamp(0.8rem, 3vw, 1.5rem) clamp(1rem, 3vh, 2rem);
+      color: var(--text-light);
+      overflow-x: hidden;
+      position: relative;
+    }
+
+    .game-header {
+      text-align: center;
+      margin-bottom: clamp(0.8rem, 2vh, 1.2rem);
+    }
+
+    .game-header h1 {
+      font-family: 'Playfair Display', serif;
+      font-size: clamp(1.8rem, 7vw, 3.2rem);
+      font-weight: 700;
+      background: linear-gradient(135deg, #e6d5a8, #c2a14b);
+      background-clip: text;
+      -webkit-background-clip: text;
+      color: transparent;
+      letter-spacing: -0.02em;
+    }
+
+    .game-header p {
+      font-size: clamp(0.65rem, 2.5vw, 0.85rem);
+      letter-spacing: 2px;
+      color: var(--text-muted);
+    }
+
+    /* STATUS ROW — ALWAYS ONE LINE, NO WRAP */
+    .status-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: clamp(8px, 1.8vw, 20px);
+      width: 100%;
+      max-width: 1100px;
+      margin: 0 auto clamp(1rem, 2.5vh, 1.8rem) auto;
+      flex-wrap: nowrap;
+      /* CRITICAL: never wrap to next line */
+    }
+
+    /* status-bar — flexible, resizes text inside */
+    .status-bar {
+      background: var(--bg-card);
+      backdrop-filter: blur(12px);
+      border: 1px solid rgba(212, 175, 55, 0.3);
+      border-radius: 60px;
+      padding: clamp(4px, 1.2vw, 10px) clamp(12px, 2.2vw, 24px);
+      display: flex;
+      align-items: center;
+      gap: clamp(8px, 1.6vw, 18px);
+      flex-wrap: nowrap;
+      /* inner items stay in one line */
+      justify-content: space-between;
+      flex: 1;
+      /* take remaining space */
+      min-width: 0;
+      /* allow shrinking */
+      transition: all 0.1s ease;
+    }
+
+    .status-left {
+      display: flex;
+      align-items: center;
+      gap: clamp(6px, 1.5vw, 14px);
+      flex-shrink: 1;
+      min-width: 0;
+    }
+
+    .status-dot {
+      width: clamp(8px, 1.5vw, 12px);
+      height: clamp(8px, 1.5vw, 12px);
+      border-radius: 50%;
+      background: #5a5e6e;
+      transition: all 0.2s;
+      flex-shrink: 0;
+    }
+
+    .status-dot.green {
+      background: #3dd68c;
+      box-shadow: 0 0 8px #3dd68c;
+    }
+
+    .status-dot.red {
+      background: #e6685c;
+      box-shadow: 0 0 8px #e6685c;
+    }
+
+    .status-dot.gold {
+      background: var(--gold);
+      box-shadow: 0 0 6px var(--gold);
+    }
+
+    .status-text {
+      font-weight: 500;
+      font-size: clamp(0.85rem, 2.8vw, 1.2rem);
+      white-space: nowrap;
+      text-overflow: ellipsis;
+      overflow: hidden;
+      max-width: 180px;
+    }
+
+    .color-badge {
+      background: rgba(0, 0, 0, 0.55);
+      padding: clamp(3px, 1vw, 6px) clamp(8px, 2vw, 16px);
+      border-radius: 40px;
+      font-size: clamp(0.6rem, 2vw, 0.8rem);
+      font-weight: 600;
+      text-transform: uppercase;
+      border: 1px solid var(--gold-dim);
+      white-space: nowrap;
+      flex-shrink: 0;
+    }
+
+    /* CHAT TOGGLE BUTTON — always stays on the same line */
+    .chat-toggle-btn {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: clamp(44px, 7vw, 58px);
+      height: clamp(44px, 7vw, 58px);
+      background: linear-gradient(145deg, #2a2e3c, #1b1e2a);
+      border-radius: 50%;
+      cursor: pointer;
+      box-shadow: 0 8px 20px rgba(0, 0, 0, 0.5), 0 0 0 1px rgba(212, 175, 55, 0.5);
+      transition: all 0.2s ease;
+      backdrop-filter: blur(8px);
+      border: none;
+      color: var(--gold);
+      position: relative;
+      flex-shrink: 0;
+    }
+
+    .chat-toggle-btn:hover {
+      transform: scale(1.05);
+      background: linear-gradient(145deg, #3a3f50, #252a38);
+    }
+
+    .chat-toggle-btn:active {
+      transform: scale(0.96);
+    }
+
+    .chat-icon {
+      width: 55%;
+      height: 55%;
+      object-fit: contain;
+      pointer-events: none;
+      user-select: none;
+    }
+
+    .chat-badge {
+      position: absolute;
+      top: -5px;
+      right: -5px;
+      background: #e6685c;
+      color: white;
+      border-radius: 30px;
+      padding: 0 5px;
+      min-width: 20px;
+      height: 20px;
+      font-size: 11px;
+      font-weight: bold;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 0 4px rgba(0, 0, 0, 0.5);
+      font-family: 'Inter', sans-serif;
+      line-height: 1;
+      white-space: nowrap;
+      pointer-events: none;
+    }
+
+    /* extra media: guarantee no text overflow & all in one line on smallest screens */
+    @media (max-width: -550px) {
+      .status-bar {
+        padding: 0px 1px;
+        gap: 6px;
+      }
+
+      .status-text {
+        font-size: 0.92rem;
+        max-width: 150px;
+      }
+
+      .color-badge {
+        font-size: 0.55rem;
+        padding: 3px 8px;
+      }
+
+      .chat-toggle-btn {
+        width: 42px;
+        height: 42px;
+      }
+
+      .status-row {
+        gap: 6px;
+      }
+    }
+
+    @media (max-width: -450px) {
+      .status-text {
+        max-width: 100px;
+        font-size: 0.58rem;
+      }
+
+      .color-badge {
+        font-size: 0.5rem;
+        padding: 2px 6px;
+      }
+    }
+
+    /* board styling */
+    .game-layout {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      width: 100%;
+      max-width: 1100px;
+      margin: 0 auto;
+    }
+
+    .board-wrapper {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      width: 100%;
+    }
+
+    .board-container {
+      position: relative;
+      width: 100%;
+      max-width: min(76vh, 82vw, 760px);
+      aspect-ratio: 1 / 1;
+      background: rgba(0, 0, 0, 0.2);
+      border-radius: var(--radius-md);
+      padding: clamp(3px, 1vw, 8px);
+      backdrop-filter: blur(2px);
+      box-shadow: var(--shadow-lg);
+      margin: 0 auto;
+      overflow: visible;
+    }
+
+    #board {
+      display: grid;
+      grid-template-columns: repeat(8, 1fr);
+      grid-template-rows: repeat(8, 1fr);
+      width: 100%;
+      height: 100%;
+      border-radius: calc(var(--radius-sm) - 2px);
+      overflow: hidden;
+      box-shadow: 0 0 0 1px var(--gold-dim), 0 8px 25px rgba(0, 0, 0, 0.5);
+    }
+
+    .sq {
+      position: relative;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: default;
+      transition: all 0.1s ease;
+    }
+
+    .sq.light {
+      background: var(--light-sq);
+    }
+
+    .sq.dark {
+      background: var(--dark-sq);
+    }
+
+    .sq.selected {
+      background: var(--light-sq-hi) !important;
+      box-shadow: inset 0 0 0 2px rgba(255, 215, 0, 0.9), 0 0 0 2px rgba(0, 0, 0, 0.2);
+      z-index: 2;
+    }
+
+    .sq.selected.dark {
+      background: var(--dark-sq-hi) !important;
+    }
+
+    .sq.last-move::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: rgba(255, 220, 100, 0.35);
+      pointer-events: none;
+      z-index: 1;
+    }
+
+    .sq.in-check {
+      box-shadow: inset 0 0 0 3px #e55, 0 0 0 2px rgba(255, 80, 80, 0.8);
+      z-index: 2;
+    }
+
+    .sq.clickable {
+      cursor: pointer;
+      transition: filter 0.1s;
+    }
+
+    .sq.clickable:hover {
+      filter: brightness(1.06);
+    }
+
+    .sq .dot-move {
+      position: absolute;
+      width: 24%;
+      height: 24%;
+      background: rgba(0, 0, 0, 0.28);
+      border-radius: 50%;
+      pointer-events: none;
+      z-index: 2;
+    }
+
+    .sq.capture-hint::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      border-radius: 50%;
+      border: 4px solid rgba(0, 0, 0, 0.35);
+      pointer-events: none;
+      z-index: 2;
+    }
+
+    .piece-img {
+      width: 70%;
+      max-width: 70%;
+      height: auto;
+      display: block;
+      margin: auto;
+      filter: drop-shadow(0 3px 4px rgba(0, 0, 0, 0.3));
+      pointer-events: none;
+      user-select: none;
+      filter: none !important;
+      -webkit-filter: none !important;
+    }
+
+    @media (max-width: 560px) {
+      .piece-img {
+        width: 68%;
+      }
+    }
+
+    @media (min-width: 1200px) {
+      .piece-img {
+        width: 72%;
+      }
+    }
+
+    .coordinates {
+      display: flex;
+      justify-content: space-between;
+      margin-top: 6px;
+      padding: 0 8px;
+      font-size: clamp(0.6rem, 2vw, 0.8rem);
+      font-weight: 500;
+      color: var(--text-muted);
+      font-family: monospace;
+    }
+
+    .rank-labels {
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      position: absolute;
+      left: clamp(-32px, -5vw, -24px);
+      top: 0;
+      bottom: 0;
+      font-size: clamp(0.6rem, 2vw, 0.8rem);
+      font-weight: 500;
+      color: var(--text-muted);
+      text-align: right;
+    }
+
+    .rank-labels.right {
+      left: auto;
+      right: clamp(-32px, -5vw, -24px);
+      text-align: left;
+    }
+
+    .board-container {
+      position: relative;
+    }
+
+    @media (max-width: 680px) {
+
+      .rank-labels,
+      .coordinates {
+        display: none;
+      }
+    }
+
+    /* SLIDER PANEL */
+    .chat-slider {
+      position: fixed;
+      left: 0;
+      top: 50%;
+      transform: translateY(-50%) translateX(-100%);
+      width: min(360px, 82vw);
+      max-width: 380px;
+      z-index: 1050;
+      transition: transform 0.35s cubic-bezier(0.2, 0.9, 0.4, 1.1);
+      pointer-events: none;
+    }
+
+    .chat-slider.open {
+      transform: translateY(-50%) translateX(0);
+      pointer-events: auto;
+    }
+
+    .glass-card {
+      background: var(--bg-card);
+      backdrop-filter: blur(20px);
+      border-radius: var(--radius-md);
+      border: 1px solid rgba(212, 175, 55, 0.4);
+      box-shadow: var(--shadow-lg);
+      display: flex;
+      flex-direction: column;
+      height: min(65vh, 540px);
+      max-height: 70vh;
+      min-height: 360px;
+      overflow: hidden;
+    }
+
+    .glass-card:hover {
+      border-color: rgba(212, 175, 55, 0.7);
+    }
+
+    .card-header {
+      padding: clamp(0.7rem, 2.5vw, 1.1rem) clamp(1rem, 3vw, 1.4rem);
+      border-bottom: 1px solid rgba(212, 175, 55, 0.3);
+      font-family: 'Playfair Display', serif;
+      font-weight: 600;
+      font-size: clamp(1rem, 4vw, 1.35rem);
+      background: linear-gradient(135deg, var(--gold), #c9a03d);
+      background-clip: text;
+      -webkit-background-clip: text;
+      color: transparent;
+    }
+
+    .chat-messages {
+      flex: 1;
+      overflow-y: auto;
+      padding: clamp(0.8rem, 2.5vw, 1.2rem);
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .chat-bubble {
+      max-width: 85%;
+      padding: 8px 14px;
+      border-radius: 20px;
+      font-size: clamp(0.75rem, 2.5vw, 0.88rem);
+      line-height: 1.4;
+      word-break: break-word;
+      animation: fadeSlideUp 0.2s ease;
+    }
+
+    .chat-bubble.left {
+      background: rgba(35, 40, 55, 0.92);
+      align-self: flex-start;
+      border-bottom-left-radius: 5px;
+      border: 1px solid rgba(212, 175, 55, 0.3);
+    }
+
+    .chat-bubble.right {
+      background: linear-gradient(135deg, #2a6e4b, #1e543a);
+      align-self: flex-end;
+      border-bottom-right-radius: 5px;
+      border: 1px solid rgba(212, 175, 55, 0.4);
+    }
+
+    .chat-bubble.sys {
+      background: rgba(100, 100, 130, 0.55);
+      font-style: italic;
+      align-self: center;
+      font-size: clamp(0.65rem, 2vw, 0.75rem);
+      padding: 4px 12px;
+      border-radius: 30px;
+      max-width: 90%;
+      text-align: center;
+    }
+
+    .chat-name {
+      font-weight: 600;
+      font-size: clamp(0.6rem, 2vw, 0.7rem);
+      margin-bottom: 2px;
+      color: var(--gold);
+    }
+
+    .chat-text {
+      color: #ece9e0;
+    }
+
+    .chat-input-wrapper {
+      display: flex;
+      gap: 8px;
+      padding: clamp(0.7rem, 2vw, 1rem) clamp(0.8rem, 2.5vw, 1.2rem);
+      background: rgba(0, 0, 0, 0.4);
+      border-top: 1px solid rgba(212, 175, 55, 0.25);
+    }
+
+    .chat-input-wrapper input {
+      flex: 1;
+      background: rgba(20, 22, 32, 0.9);
+      border: 1px solid rgba(212, 175, 55, 0.5);
+      border-radius: 40px;
+      padding: clamp(8px, 2vw, 12px) clamp(12px, 2.5vw, 18px);
+      color: #f0f0e0;
+      font-size: clamp(0.75rem, 2.5vw, 0.9rem);
+      outline: none;
+    }
+
+    .chat-input-wrapper input:focus {
+      border-color: var(--gold);
+      box-shadow: 0 0 8px rgba(212, 175, 55, 0.3);
+    }
+
+    .chat-input-wrapper button {
+      background: rgba(212, 175, 55, 0.2);
+      border: 1px solid var(--gold-dim);
+      border-radius: 40px;
+      padding: 0 clamp(0.8rem, 2.5vw, 1.4rem);
+      color: var(--gold);
+      font-weight: 600;
+      font-size: clamp(0.75rem, 2.5vw, 0.9rem);
+      cursor: pointer;
+      transition: 0.2s;
+      white-space: nowrap;
+    }
+
+    .chat-input-wrapper button:hover {
+      background: rgba(212, 175, 55, 0.4);
+      color: white;
+      border-color: var(--gold);
+    }
+
+    #result-overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.85);
+      backdrop-filter: blur(10px);
+      align-items: center;
+      justify-content: center;
+      z-index: 2000;
+    }
+
+    #result-overlay.show {
+      display: flex;
+    }
+
+    .result-box {
+      background: rgba(16, 18, 24, 0.96);
+      border: 1px solid var(--gold);
+      border-radius: clamp(1.5rem, 5vw, 2.5rem);
+      padding: clamp(1.2rem, 5vw, 2.5rem) clamp(1.5rem, 6vw, 3.5rem);
+      text-align: center;
+      box-shadow: 0 25px 40px rgba(0, 0, 0, 0.5);
+      animation: pop 0.4s cubic-bezier(0.34, 1.2, 0.64, 1);
+      max-width: 90vw;
+    }
+
+    @keyframes pop {
+      from {
+        transform: scale(0.8);
+        opacity: 0;
+      }
+
+      to {
+        transform: scale(1);
+        opacity: 1;
+      }
+    }
+
+    .result-box h2 {
+      font-family: 'Playfair Display', serif;
+      font-size: clamp(1.5rem, 7vw, 2.4rem);
+      color: var(--gold);
+      margin-bottom: 0.3rem;
+    }
+
+    .result-box button {
+      background: var(--gold-dim);
+      border: none;
+      padding: clamp(6px, 2vw, 12px) clamp(20px, 5vw, 36px);
+      border-radius: 40px;
+      font-weight: 600;
+      font-size: clamp(0.8rem, 2.8vw, 1rem);
+      margin-top: 1rem;
+      cursor: pointer;
+    }
+
+    .result-box button:hover {
+      background: var(--gold);
+      transform: scale(1.02);
+    }
+
+    @keyframes fadeSlideUp {
+      from {
+        opacity: 0;
+        transform: translateY(6px);
+      }
+
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    ::-webkit-scrollbar {
+      width: 5px;
+    }
+
+    ::-webkit-scrollbar-track {
+      background: #1e212c;
+      border-radius: 10px;
+    }
+
+    ::-webkit-scrollbar-thumb {
+      background: var(--gold-dim);
+      border-radius: 10px;
+    }
+
+    body,
+    html {
+      overflow-x: hidden;
+    }
+
+    .board-container,
+    #board {
+      overflow: hidden;
+    }
+
+    @media (max-height: 700px) and (orientation: landscape) {
+      .glass-card {
+        height: 70vh;
+        max-height: 80vh;
+        min-height: 280px;
+      }
+    }
+  </style>
+</head>
+
+<body>
+
+  <div class="game-header">
+    <h1>♔ ROYAL CHESS</h1>
+    <p>Two‑player · Live · Fluid Chat</p>
+  </div>
+
+  <div class="status-row">
+    <div class="status-bar">
+      <div class="status-left">
+        <div class="status-dot" id="conn-dot"></div>
+        <span class="status-text" id="status-msg">Connecting...</span>
+      </div>
+      <div class="color-badge" id="color-badge" style="display: none;"></div>
+    </div>
+    <div class="chat-toggle-btn" id="chatToggleBtn">
+      <img src="assets/chat.png" class="chat-icon" alt="chat">
+      <span class="chat-badge" id="chatBadge" style="display: none;">0</span>
+    </div>
+  </div>
+
+  <div class="game-layout">
+    <div class="board-wrapper">
+      <div class="board-container">
+        <div class="rank-labels" id="rank-left"></div>
+        <div id="board"></div>
+        <div class="rank-labels right" id="rank-right"></div>
+      </div>
+      <div class="coordinates" id="file-labels"></div>
+    </div>
+  </div>
+
+  <div id="chatSlider" class="chat-slider">
+    <div class="glass-card">
+      <div class="card-header">💬 Royal Chat</div>
+      <div id="chat-log" class="chat-messages"></div>
+      <div class="chat-input-wrapper">
+        <input id="chat-input" type="text" placeholder="Type a message..." maxlength="200"
+          onkeydown="if(event.key==='Enter')sendChat()">
+        <button onclick="sendChat()">Send</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="result-overlay">
+    <div class="result-box">
+      <h2 id="result-title">Game Over</h2>
+      <p id="result-sub"></p>
+      <button onclick="closeResult()">New Game</button>
+    </div>
+  </div>
+
+  <script>
+    const PIECE_IMG_MAP = {
+      'K': 'wk', 'Q': 'wq', 'R': 'wr', 'B': 'wb', 'N': 'wn', 'P': 'wp',
+      'k': 'bk', 'q': 'bq', 'r': 'br', 'b': 'bb', 'n': 'bn', 'p': 'bp'
+    };
+    function getPieceImagePath(pieceChar) {
+      const code = PIECE_IMG_MAP[pieceChar];
+      return code ? `assets/pieces/${code}.png` : '';
+    }
+
+    let ws = null, myColor = null, currentFen = 'rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1';
+    let currentTurn = 'white', legalMoves = [], selected = null, lastMove = null, inCheck = false, gameOver = false, previousFen = null, gameOverPlayed = false;
+
+    // Enhanced sound: supports move, capture, gameover, success, notification, chat_send, chat_receive
+    function playSound(type) {
+      let src = '';
+      if (type === 'capture') src = 'assets/sounds/capture.ogg';
+      else if (type === 'move') src = 'assets/sounds/move.wav';
+      else if (type === 'gameover') src = 'assets/sounds/game_over.mp3';
+      else if (type === 'success') src = 'assets/sounds/success.wav';
+      else if (type === 'notification') src = 'assets/sounds/notification.wav';
+      else if (type === 'chat_send') src = 'assets/sounds/chat_send.wav';
+      else if (type === 'chat_receive') src = 'assets/sounds/chat_receive.wav';
+      else if (type === 'draw') src = 'assets/sounds/draw.wav';
+      if (!src) return;
+      const audio = new Audio(src);
+      audio.play().catch(e => console.warn('Audio:', e));
+    }
+
+    function fenToPieceArray(fen) {
+      const pieces = Array(64).fill(null);
+      const rows = fen.split(' ')[0].split('/');
+      for (let r = 0; r < 8; r++) {
+        const row = rows[7 - r];
+        let col = 0;
+        for (const ch of row) {
+          if (!isNaN(ch)) col += parseInt(ch);
+          else { pieces[r * 8 + col] = ch; col++; }
+        }
+      }
+      return pieces;
+    }
+    function wasCapture(oldFen, newFen) {
+      const oldBoard = fenToPieceArray(oldFen);
+      const newBoard = fenToPieceArray(newFen);
+      return newBoard.filter(p => p !== null).length < oldBoard.filter(p => p !== null).length;
+    }
+
+    let unreadCount = 0;
+    const chatToggleBtn = document.getElementById('chatToggleBtn');
+    const chatSlider = document.getElementById('chatSlider');
+    const chatBadge = document.getElementById('chatBadge');
+    function updateBadge() {
+      if (unreadCount > 0) {
+        chatBadge.textContent = unreadCount > 99 ? '99+' : unreadCount;
+        chatBadge.style.display = 'flex';
+      } else chatBadge.style.display = 'none';
+    }
+    function clearUnreadCount() { if (unreadCount !== 0) { unreadCount = 0; updateBadge(); } }
+    function isChatPanelOpen() { return chatSlider.classList.contains('open'); }
+    function onChatOpened() { clearUnreadCount(); }
+    function maybeIncrementUnread(messageFrom, isSystem = false) {
+      if (!isSystem && messageFrom === myColor) return;
+      if (isChatPanelOpen()) return;
+      unreadCount++;
+      updateBadge();
+    }
+
+    function uciToIdx(uci) { return (parseInt(uci[1]) - 1) * 8 + (uci.charCodeAt(0) - 97); }
+    function idxToAlg(idx) { return String.fromCharCode(97 + (idx % 8)) + (Math.floor(idx / 8) + 1); }
+
+    function buildBoard() {
+      const board = document.getElementById('board');
+      board.innerHTML = '';
+      const rankLeft = document.getElementById('rank-left'), rankRight = document.getElementById('rank-right');
+      rankLeft.innerHTML = rankRight.innerHTML = '';
+      const flip = myColor === 'black';
+      for (let r = 7; r >= 0; r--) {
+        const rank = flip ? (7 - r) + 1 : r + 1;
+        rankLeft.innerHTML += `<div>${rank}</div>`;
+        rankRight.innerHTML += `<div>${rank}</div>`;
+      }
+      for (let displayRow = 0; displayRow < 8; displayRow++) {
+        for (let displayCol = 0; displayCol < 8; displayCol++) {
+          const boardRow = flip ? displayRow : 7 - displayRow;
+          const boardCol = flip ? 7 - displayCol : displayCol;
+          const idx = boardRow * 8 + boardCol;
+          const sq = document.createElement('div');
+          sq.className = `sq ${(boardRow + boardCol) % 2 === 0 ? 'dark' : 'light'}`;
+          sq.dataset.idx = idx;
+          sq.onclick = () => handleClick(idx);
+          board.appendChild(sq);
+        }
+      }
+    }
+
+    function renderFen(fen) {
+      const rows = fen.split(' ')[0].split('/');
+      const pieces = Array(64).fill(null);
+      for (let r = 0; r < 8; r++) {
+        const row = rows[7 - r];
+        let col = 0;
+        for (const ch of row) {
+          if (!isNaN(ch)) col += parseInt(ch);
+          else { pieces[r * 8 + col] = ch; col++; }
+        }
+      }
+      document.querySelectorAll('.sq').forEach(sq => {
+        const idx = parseInt(sq.dataset.idx);
+        const pieceChar = pieces[idx];
+        sq.innerHTML = '';
+        sq.classList.remove('selected', 'last-move', 'in-check', 'clickable', 'capture-hint');
+        if (lastMove && (idx === lastMove.from || idx === lastMove.to)) sq.classList.add('last-move');
+        if (inCheck && pieceChar && pieceChar.toLowerCase() === 'k') {
+          const kingColor = pieceChar === 'K' ? 'white' : 'black';
+          if (kingColor === currentTurn) sq.classList.add('in-check');
+        }
+        if (pieceChar) {
+          const img = document.createElement('img');
+          img.src = getPieceImagePath(pieceChar);
+          img.alt = pieceChar;
+          img.className = 'piece-img';
+          img.onerror = () => {
+            img.style.display = 'none';
+            sq.style.fontSize = 'clamp(1.5rem, 8vw, 2.5rem)';
+            const symbolMap = { 'K': '♔', 'Q': '♕', 'R': '♖', 'B': '♗', 'N': '♘', 'P': '♙', 'k': '♚', 'q': '♛', 'r': '♜', 'b': '♝', 'n': '♞', 'p': '♟' };
+            sq.innerText = symbolMap[pieceChar] || pieceChar;
+          };
+          sq.appendChild(img);
+        }
+        if (selected === idx) sq.classList.add('selected');
+        if (selected !== null) {
+          const fromAlg = idxToAlg(selected);
+          const moveable = legalMoves.some(m => m.startsWith(fromAlg) && m.slice(2, 4) === idxToAlg(idx));
+          if (moveable) {
+            sq.classList.add('clickable');
+            if (pieceChar) sq.classList.add('capture-hint');
+            else { const dot = document.createElement('div'); dot.className = 'dot-move'; sq.appendChild(dot); }
+          }
+        } else if (!gameOver && myColor === currentTurn && pieceChar) {
+          const isOwn = myColor === 'white' ? pieceChar === pieceChar.toUpperCase() : pieceChar === pieceChar.toLowerCase();
+          if (isOwn) sq.classList.add('clickable');
+        }
+      });
+    }
+
+    function handleClick(idx) {
+      if (gameOver || !ws || myColor !== currentTurn) return;
+      const alg = idxToAlg(idx);
+      if (selected === null) {
+        if (legalMoves.some(m => m.startsWith(alg))) { selected = idx; renderFen(currentFen); }
+      } else {
+        const fromAlg = idxToAlg(selected);
+        const move = fromAlg + alg;
+        const promotionMove = legalMoves.find(m => m.startsWith(move) && m.length === 5);
+        if (promotionMove || legalMoves.includes(move)) {
+          const finalUci = promotionMove ? fromAlg + alg + 'q' : move;
+          sendMove(finalUci);
+          selected = null;
+        } else {
+          selected = legalMoves.some(m => m.startsWith(alg)) ? idx : null;
+          renderFen(currentFen);
+        }
+      }
+    }
+    function sendMove(uci) { if (ws) ws.send(JSON.stringify({ type: 'move', move: uci })); selected = null; }
+    function updateLastMove(uci) {
+      if (uci && uci.length >= 4) lastMove = { from: uciToIdx(uci.slice(0, 2)), to: uciToIdx(uci.slice(2, 4)) };
+      else lastMove = null;
+    }
+    function addChat(from, text) {
+      const log = document.getElementById('chat-log');
+      if (!log) return;
+      const div = document.createElement('div');
+      if (from === 'sys') {
+        div.className = 'chat-bubble sys';
+        div.textContent = text;
+        maybeIncrementUnread('sys', true);
+      } else {
+        const isOwn = (from === myColor);
+        div.className = `chat-bubble ${isOwn ? 'right' : 'left'}`;
+        const displayName = from === 'white' ? '♔ White' : '♚ Black';
+        div.innerHTML = `<div class="chat-name">${displayName}</div><div class="chat-text">${escapeHtml(text)}</div>`;
+        if (!isOwn) maybeIncrementUnread(from, false);
+      }
+      log.appendChild(div);
+      log.scrollTop = log.scrollHeight;
+    }
+    function escapeHtml(str) { return str.replace(/[&<>]/g, m => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;' }[m])); }
+
+    function sendChat() {
+      const inp = document.getElementById('chat-input');
+      const text = inp.value.trim();
+      if (text && ws) {
+        ws.send(JSON.stringify({ type: 'chat', text }));
+        // Play send sound on sender's device
+        playSound('chat_send');
+      }
+      inp.value = '';
+    }
+
+    function setStatus(msg, dotClass, showBadge) {
+      document.getElementById('status-msg').textContent = msg;
+      const dot = document.getElementById('conn-dot');
+      dot.className = 'status-dot ' + (dotClass || '');
+      const badge = document.getElementById('color-badge');
+      if (showBadge && myColor) {
+        badge.style.display = 'inline-block';
+        badge.textContent = `● ${myColor.toUpperCase()} player`;
+        badge.style.color = myColor === 'white' ? '#f5f0e8' : '#c9b37c';
+      } else badge.style.display = 'none';
+    }
+
+    // Enhanced game over display: winner gets congratulatory message, loser gets defeat message
+    function showGameOverResult(resultMsg) {
+      gameOver = true;
+      let displayTitle = '';
+      let displaySub = resultMsg;
+      // Parse winner from result string (e.g., "White wins by checkmate" or "Black wins by checkmate")
+      const lowerResult = resultMsg.toLowerCase();
+      let winnerColor = null;
+      if (lowerResult.includes('white wins')) winnerColor = 'white';
+      else if (lowerResult.includes('black wins')) winnerColor = 'black';
+
+      if (winnerColor) {
+        if (myColor === winnerColor) {
+          displayTitle = '✨ Congratulations! You Win 🤓!! ✨';
+        } else {
+          displayTitle = '💔 You Lose !! 😞';
+        }
+      } else {
+        // Handle draws or unknown outcomes
+        if (lowerResult.includes('draw') || lowerResult.includes('stalemate')) {
+          displayTitle = '♟️ Game Over – Draw ♟️';
+          displaySub = resultMsg;
+        } else {
+          displayTitle = 'Game Over';
+          displaySub = resultMsg;
+        }
+      }
+      document.getElementById('result-title').textContent = displayTitle;
+      document.getElementById('result-sub').textContent = displaySub;
+      document.getElementById('result-overlay').classList.add('show');
+    }
+
+    function closeResult() { window.location.reload(); }
+
+    // outside click to close chat slider 
+    function setupOutsideClickToClose() {
+      document.addEventListener('click', (e) => {
+        if (!chatSlider.classList.contains('open')) return;
+        const isToggle = chatToggleBtn.contains(e.target);
+        const isInsideSlider = chatSlider.contains(e.target);
+        if (!isInsideSlider && !isToggle) {
+          chatSlider.classList.remove('open');
+          onChatOpened();
+        }
+      });
+    }
+
+    function initChatToggle() {
+      if (chatToggleBtn && chatSlider) {
+        chatToggleBtn.addEventListener('click', (e) => {
+          e.stopPropagation();
+          const wasOpen = chatSlider.classList.contains('open');
+          chatSlider.classList.toggle('open');
+          if (!wasOpen && chatSlider.classList.contains('open')) onChatOpened();
+        });
+      }
+    }
+
+    function playGameEndSounds(resultMsg) {
+      let winner = null;
+      let loser = null;
+      if (resultMsg.includes('White wins')) {
+        winner = 'white';
+        loser = 'black';
+      } else if (resultMsg.includes('Black wins')) {
+        winner = 'black';
+        loser = 'white';
+      } else if (resultMsg.toLowerCase().includes('draw') || resultMsg.toLowerCase().includes('stalemate')) {
+        // 👈 ADD DRAW HANDLING
+        playSound('draw');
+        return;
+      }
+      if (winner && myColor) {
+        if (myColor === winner) {
+          playSound('success');
+        } else if (myColor === loser) {
+          playSound('gameover');
+        }
+      }
+    }
+
+    function connect() {
+      const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+      const url = `${protocol}//${window.location.host}/ws`;
+      ws = new WebSocket(url);
+      ws.onopen = () => setStatus('Connected. Waiting...', 'gold', false);
+      ws.onmessage = ({ data }) => {
+        let msg;
+        try { msg = JSON.parse(data); } catch { return; }
+        switch (msg.type) {
+          case 'welcome':
+            myColor = msg.color;
+            buildBoard();
+            setStatus(`You are ${myColor}. Wait opponent`, 'gold', true);
+            renderFen(msg.fen);
+            break;
+          case 'state':
+            if (previousFen !== null && previousFen !== msg.fen && !gameOver) {
+              if (wasCapture(previousFen, msg.fen)) playSound('capture');
+              else playSound('move');
+            }
+            previousFen = msg.fen;
+            currentFen = msg.fen;
+            currentTurn = msg.turn;
+            legalMoves = msg.legal_moves || [];
+            inCheck = msg.in_check || false;
+            // Game over handling with differentiated UI per device
+            if (msg.game_over && msg.result && !gameOverPlayed) {
+              gameOverPlayed = true;
+              playGameEndSounds(msg.result);
+              showGameOverResult(msg.result);
+              setStatus('Game over: ' + msg.result, 'red', true);
+              gameOver = true;
+            } else if (msg.game_over && !gameOver) {
+              gameOver = true;
+              if (msg.result) setStatus('Game over: ' + msg.result, 'red', true);
+              else setStatus('Game over', 'red', true);
+              if (msg.result) showGameOverResult(msg.result);
+            } else {
+              gameOver = msg.game_over || false;
+              const yourTurn = myColor === currentTurn;
+              setStatus(yourTurn ? '⚡ Your turn' : `Waiting for ${currentTurn}...`, yourTurn ? 'green' : 'gold', true);
+            }
+            if (msg.ready) addChat('sys', msg.message || 'Game started!');
+            if (msg.last_move) updateLastMove(msg.last_move);
+            renderFen(currentFen);
+            break;
+          case 'error': addChat('sys', '⚠ ' + msg.message); selected = null; renderFen(currentFen); break;
+          case 'chat':
+            addChat(msg.from, msg.text);
+            // Incoming chat from opponent -> play appropriate sound based on panel state
+            if (msg.from !== myColor) {
+              if (isChatPanelOpen()) {
+                playSound('chat_receive');
+              } else {
+                playSound('notification');
+              }
+            }
+            break;
+        }
+      };
+      ws.onclose = () => { setStatus('Disconnected. Refresh.', 'red', false); addChat('sys', 'Connection closed.'); gameOver = true; };
+      ws.onerror = () => setStatus('Connection error. Server?', 'red', false);
+    }
+
+    window.onload = () => {
+      buildBoard();
+      renderFen(currentFen);
+      initChatToggle();
+      setupOutsideClickToClose();
+      connect();
+    };
+  </script>
+</body>
+
+</html>
