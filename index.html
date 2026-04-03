@@ -1,3 +1,4 @@
+<!-- index.html -->
 <!DOCTYPE html>
 <html lang="en">
 
@@ -5,11 +6,12 @@
   <meta charset="UTF-8">
   <meta name="color-scheme" content="light">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
-  <title>Royal Chess — Fluid Board · Image Pieces</title>
+  <title>Royal Chess — Premium Matchmaking · Clash of Kings</title>
   <link
     href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;14..32,400;14..32,500;14..32,600;14..32,700&family=Playfair+Display:wght@500;600;700&display=swap"
     rel="stylesheet">
   <style>
+    /* ---------- RESET & GLOBAL ---------- */
     * {
       margin: 0;
       padding: 0;
@@ -20,8 +22,9 @@
       color-scheme: light !important;
       filter: none !important;
       -webkit-filter: none !important;
+      font-size: clamp(13px, 1.8vw, 19px);
+      overflow-x: hidden;
     }
-
 
     :root {
       --bg-dark: #0a0c12;
@@ -41,13 +44,6 @@
       --radius-sm: 0.75rem;
     }
 
-    html {
-      font-size: clamp(13px, 1.8vw, 19px);
-      overflow-x: hidden;
-    }
-
-
-
     body {
       background: radial-gradient(circle at 20% 30%, #11141e, #07090e);
       font-family: 'Inter', sans-serif;
@@ -62,9 +58,739 @@
       position: relative;
     }
 
+    /* ===== LOGIN OVERLAY (updated with password & toggle) ===== */
+    #login-overlay {
+      position: fixed;
+      inset: 0;
+      background: radial-gradient(circle at 20% 30%, #11141e, #07090e);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 3000;
+      backdrop-filter: blur(12px);
+      flex-direction: column;
+      gap: 2rem;
+    }
+
+    .login-container {
+      background: var(--bg-card);
+      backdrop-filter: blur(20px);
+      border-radius: var(--radius-md);
+      border: 1px solid rgba(212, 175, 55, 0.5);
+      padding: clamp(1.5rem, 6vw, 3rem) clamp(1.5rem, 6vw, 3rem);
+      text-align: center;
+      width: min(90%, 420px);
+      box-shadow: var(--shadow-lg);
+    }
+
+    .login-container h1 {
+      font-family: 'Playfair Display', serif;
+      font-size: clamp(1.8rem, 7vw, 2.5rem);
+      background: linear-gradient(135deg, #e6d5a8, #c2a14b);
+      background-clip: text;
+      -webkit-background-clip: text;
+      color: transparent;
+      margin-bottom: 0.5rem;
+    }
+
+    .login-container p {
+      color: var(--text-muted);
+      margin-bottom: 1.8rem;
+      font-size: 0.9rem;
+    }
+
+    .login-input-group {
+      margin-bottom: 1rem;
+    }
+
+    .login-input-group input {
+      width: 100%;
+      background: rgba(20, 22, 32, 0.9);
+      border: 2px solid rgba(212, 175, 55, 0.4);
+      border-radius: 60px;
+      padding: 0.9rem 1.5rem;
+      color: #f0f0e0;
+      font-size: 1rem;
+      outline: none;
+      transition: all 0.2s;
+      text-align: center;
+      font-family: 'Inter', monospace;
+      letter-spacing: 0.5px;
+    }
+
+    .login-input-group input:focus {
+      border-color: var(--gold);
+      box-shadow: 0 0 12px rgba(212, 175, 55, 0.3);
+    }
+
+    .login-input-group input.invalid {
+      border-color: #e6685c;
+      box-shadow: 0 0 8px rgba(230, 104, 92, 0.4);
+    }
+
+    .login-buttons {
+      display: flex;
+      gap: 12px;
+      margin-top: 0.5rem;
+    }
+
+    .login-btn {
+      background: linear-gradient(145deg, #2a6e4b, #1e543a);
+      border: none;
+      padding: 0.9rem 1rem;
+      font-size: 1rem;
+      font-weight: bold;
+      border-radius: 60px;
+      color: white;
+      cursor: pointer;
+      box-shadow: 0 0 15px rgba(212, 175, 55, 0.4);
+      font-family: 'Inter', sans-serif;
+      transition: transform 0.2s, opacity 0.2s;
+      flex: 1;
+    }
+
+    .login-btn.secondary {
+      background: linear-gradient(145deg, #3a3f50, #252a38);
+      box-shadow: 0 0 8px rgba(212, 175, 55, 0.2);
+    }
+
+    .login-btn:hover {
+      transform: scale(1.02);
+    }
+
+    .login-btn:active {
+      transform: scale(0.98);
+    }
+
+    .login-error {
+      color: #e6685c;
+      font-size: 0.8rem;
+      margin-top: 0.8rem;
+      min-height: 2rem;
+    }
+
+    .login-hint {
+      color: var(--text-muted);
+      font-size: 0.7rem;
+      margin-top: 1rem;
+    }
+
+    /* ===== PREMIUM SEARCHING ANIMATION ===== */
+    #searching-animation {
+      position: fixed;
+      inset: 0;
+      background: radial-gradient(circle at 30% 20%, #0a0e1a, #020408);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      z-index: 2100;
+      backdrop-filter: blur(12px);
+      flex-direction: column;
+      gap: 2rem;
+      transition: opacity 0.2s;
+    }
+
+    .search-radar {
+      position: relative;
+      width: 180px;
+      height: 180px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .radar-ring {
+      position: absolute;
+      width: 100%;
+      height: 100%;
+      border: 3px solid rgba(212, 175, 55, 0.3);
+      border-radius: 50%;
+      animation: pulseRing 2s infinite ease-out;
+    }
+
+    .radar-ring:nth-child(2) {
+      animation-delay: 0.6s;
+      border-width: 2px;
+      border-color: rgba(212, 175, 55, 0.6);
+    }
+
+    .radar-ring:nth-child(3) {
+      animation-delay: 1.2s;
+      border-width: 1px;
+      border-color: rgba(212, 175, 55, 0.9);
+    }
+
+    @keyframes pulseRing {
+      0% {
+        transform: scale(0.6);
+        opacity: 1;
+      }
+
+      100% {
+        transform: scale(1.4);
+        opacity: 0;
+      }
+    }
+
+    .knight-search {
+      width: 90px;
+      height: 90px;
+      background-size: contain;
+      background-repeat: no-repeat;
+      background-position: center;
+      animation: floatKnight 1.4s infinite ease-in-out, swapKnight 2.8s infinite;
+      filter: drop-shadow(0 0 14px gold);
+      z-index: 2;
+      transform-origin: center;
+    }
+
+    @keyframes swapKnight {
+      0% {
+        background-image: url('assets/pieces/wn.png');
+      }
+
+      50% {
+        background-image: url('assets/pieces/bn.png');
+      }
+
+      100% {
+        background-image: url('assets/pieces/wn.png');
+      }
+    }
+
+    @keyframes floatKnight {
+      0% {
+        transform: translateY(0px) scale(1) rotate(0deg);
+      }
+
+      50% {
+        transform: translateY(-14px) scale(1.08) rotate(6deg);
+      }
+
+      100% {
+        transform: translateY(0px) scale(1) rotate(0deg);
+      }
+    }
+
+    .search-text-glow {
+      font-size: clamp(1.2rem, 5vw, 1.8rem);
+      font-weight: 600;
+      background: linear-gradient(135deg, #e6d5a8, #c2a14b);
+      background-clip: text;
+      -webkit-background-clip: text;
+      color: transparent;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      animation: textPulse 1.2s infinite;
+    }
+
+    @keyframes textPulse {
+      0% {
+        opacity: 0.6;
+        text-shadow: 0 0 0px gold;
+      }
+
+      50% {
+        opacity: 1;
+        text-shadow: 0 0 12px rgba(212, 175, 55, 0.8);
+      }
+
+      100% {
+        opacity: 0.6;
+        text-shadow: 0 0 0px gold;
+      }
+    }
+
+    .search-dots {
+      display: flex;
+      gap: 12px;
+    }
+
+    .search-dots span {
+      width: 12px;
+      height: 12px;
+      background: var(--gold);
+      border-radius: 50%;
+      animation: bounceDot 0.8s infinite alternate;
+    }
+
+    .search-dots span:nth-child(2) {
+      animation-delay: 0.2s;
+    }
+
+    .search-dots span:nth-child(3) {
+      animation-delay: 0.4s;
+    }
+
+    @keyframes bounceDot {
+      0% {
+        transform: translateY(0);
+        opacity: 0.4;
+      }
+
+      100% {
+        transform: translateY(-12px);
+        opacity: 1;
+      }
+    }
+
+    /* ===== VERSUS PREMIUM ANIMATION ===== */
+    #versus-overlay {
+      position: fixed;
+      inset: 0;
+      background: radial-gradient(ellipse at center, #0c0f1a, #000000);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      z-index: 2200;
+      backdrop-filter: blur(16px);
+      flex-direction: column;
+      animation: fadeInBg 0.3s ease;
+    }
+
+    @keyframes fadeInBg {
+      from {
+        backdrop-filter: blur(0px);
+        background: rgba(0, 0, 0, 0);
+      }
+
+      to {
+        backdrop-filter: blur(16px);
+        background: radial-gradient(ellipse at center, #0c0f1a, #000000);
+      }
+    }
+
+    .versus-container {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: clamp(0.5rem, 3vw, 2rem);
+      flex-wrap: nowrap;
+      white-space: nowrap;
+    }
+
+    @media (max-width: 550px) {
+      .versus-icon {
+        font-size: clamp(1.4rem, 5vw, 2rem);
+      }
+
+      .versus-divider {
+        font-size: clamp(1.2rem, 4vw, 1.6rem);
+      }
+
+      .versus-crown,
+      .versus-sword {
+        font-size: 1.6rem;
+      }
+
+      .versus-container {
+        gap: 0.5rem;
+      }
+    }
+
+    .versus-side {
+      text-align: center;
+      transform-style: preserve-3d;
+      animation: slideInVersus 0.6s cubic-bezier(0.2, 0.9, 0.4, 1.1) forwards;
+      opacity: 0;
+      white-space: nowrap;
+    }
+
+    .versus-side.left {
+      transform: translateX(-80px) rotateY(-15deg);
+    }
+
+    .versus-side.right {
+      transform: translateX(80px) rotateY(15deg);
+      animation-delay: 0.15s;
+    }
+
+    @keyframes slideInVersus {
+      0% {
+        opacity: 0;
+        transform: translateX(var(--x, -80px)) rotateY(-20deg);
+      }
+
+      100% {
+        opacity: 1;
+        transform: translateX(0) rotateY(0);
+      }
+    }
+
+    .versus-icon {
+      font-size: clamp(1.2rem, 8vw, 4rem);
+      font-weight: 800;
+      font-family: 'Playfair Display', serif;
+      background: linear-gradient(145deg, #fff5e0, #c9a03d);
+      background-clip: text;
+      -webkit-background-clip: text;
+      color: transparent;
+      text-shadow: 0 0 20px rgba(212, 175, 55, 0.5);
+      letter-spacing: 2px;
+      white-space: nowrap;
+    }
+
+
+    .versus-crown {
+      font-size: clamp(2rem, 6vw, 3.5rem);
+      filter: drop-shadow(0 0 12px gold);
+      margin-bottom: 0.5rem;
+    }
+
+    .versus-sword {
+      font-size: clamp(2.5rem, 8vw, 5rem);
+      animation: clashSword 0.8s infinite alternate;
+      filter: drop-shadow(0 0 8px #ffbb44);
+    }
+
+    @keyframes clashSword {
+      0% {
+        transform: scale(1) rotate(0deg);
+        text-shadow: 0 0 0px orange;
+      }
+
+      100% {
+        transform: scale(1.2) rotate(8deg);
+        text-shadow: 0 0 25px red;
+      }
+    }
+
+    .versus-divider {
+      font-size: clamp(1.2rem, 8vw, 3.5rem);
+      font-weight: 900;
+      background: linear-gradient(45deg, #d4af37, #ffecb3);
+      background-clip: text;
+      -webkit-background-clip: text;
+      color: transparent;
+      animation: pulseVs 0.5s ease-in-out infinite alternate;
+      white-space: nowrap;
+    }
+
+    @keyframes pulseVs {
+      from {
+        transform: scale(0.9);
+        opacity: 0.8;
+      }
+
+      to {
+        transform: scale(1.3);
+        opacity: 1;
+        text-shadow: 0 0 30px gold;
+      }
+    }
+
+    .versus-sub {
+      margin-top: 2rem;
+      font-size: clamp(0.9rem, 3vw, 1.2rem);
+      color: var(--text-muted);
+      letter-spacing: 3px;
+      font-weight: 300;
+    }
+
+    /* ===== MATCHMAKING OVERLAY ===== */
+    #matchmaking-overlay {
+      position: fixed;
+      inset: 0;
+      background: radial-gradient(circle at 20% 30%, #11141e, #07090e);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 2000;
+      backdrop-filter: blur(12px);
+      flex-direction: column;
+      gap: 2rem;
+      transition: opacity 0.3s;
+    }
+
+    .match-header {
+      text-align: center;
+    }
+
+    .match-header h1 {
+      font-family: 'Playfair Display', serif;
+      font-size: clamp(2rem, 8vw, 3.5rem);
+      background: linear-gradient(135deg, #e6d5a8, #c2a14b);
+      background-clip: text;
+      -webkit-background-clip: text;
+      color: transparent;
+    }
+
+    .match-header p {
+      color: var(--text-muted);
+      margin-top: 0.5rem;
+      font-size: clamp(0.8rem, 3vw, 1rem);
+    }
+
+    #find-match-btn {
+      background: linear-gradient(145deg, #2a6e4b, #1e543a);
+      border: none;
+      padding: 1rem 2.5rem;
+      font-size: 1.3rem;
+      font-weight: bold;
+      border-radius: 60px;
+      color: white;
+      cursor: pointer;
+      box-shadow: 0 0 15px rgba(212, 175, 55, 0.5);
+      font-family: 'Inter', sans-serif;
+      transition: transform 0.2s, opacity 0.2s;
+    }
+
+    #find-match-btn:hover {
+      transform: scale(1.02);
+      background: linear-gradient(145deg, #35805a, #286b46);
+    }
+
+    #find-match-btn:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+      transform: none;
+    }
+
+    #match-status {
+      color: var(--gold);
+      font-size: 0.9rem;
+      background: rgba(0, 0, 0, 0.5);
+      padding: 0.5rem 1.2rem;
+      border-radius: 60px;
+      backdrop-filter: blur(4px);
+    }
+
+    /* Chess UI container (hidden until match starts) */
+    #chess-game-container {
+      display: none;
+      width: 100%;
+    }
+
+    /* ===== HAMBURGER MENU (updated with avatar) ===== */
+    .hamburger-btn {
+      position: fixed;
+      top: clamp(0.8rem, 2vh, 1.2rem);
+      left: clamp(0.8rem, 2vw, 1.2rem);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: clamp(44px, 7vw, 58px);
+      height: clamp(44px, 7vw, 58px);
+      background: linear-gradient(145deg, #2a2e3c, #1b1e2a);
+      border-radius: 50%;
+      cursor: pointer;
+      box-shadow: 0 8px 20px rgba(0, 0, 0, 0.5), 0 0 0 1px rgba(212, 175, 55, 0.5);
+      transition: all 0.2s ease;
+      backdrop-filter: blur(8px);
+      border: none;
+      color: var(--gold);
+      z-index: 1200;
+      font-size: 2rem;
+      font-weight: 500;
+      line-height: 1;
+      font-family: system-ui, sans-serif;
+    }
+
+    .hamburger-btn:hover {
+      transform: scale(1.05);
+      background: linear-gradient(145deg, #3a3f50, #252a38);
+    }
+
+    .hamburger-btn:active {
+      transform: scale(0.96);
+    }
+
+    .menu-slider {
+      position: fixed;
+      left: 0;
+      top: 0;
+      height: 100%;
+      width: min(320px, 82vw);
+      max-width: 360px;
+      z-index: 1300;
+      transform: translateX(-100%);
+      transition: transform 0.35s cubic-bezier(0.2, 0.9, 0.4, 1.1);
+      pointer-events: none;
+    }
+
+    .menu-slider.open {
+      transform: translateX(0);
+      pointer-events: auto;
+    }
+
+    .menu-glass {
+      background: var(--bg-card);
+      backdrop-filter: blur(20px);
+      border-radius: 0 var(--radius-md) var(--radius-md) 0;
+      border: 1px solid rgba(212, 175, 55, 0.4);
+      border-left: none;
+      box-shadow: var(--shadow-lg);
+      display: flex;
+      flex-direction: column;
+      height: 100%;
+      width: 100%;
+      overflow: hidden;
+    }
+
+    .menu-glass:hover {
+      border-color: rgba(212, 175, 55, 0.7);
+      border-left: none;
+    }
+
+    .menu-header {
+      padding: clamp(1rem, 4vw, 1.5rem) clamp(1.2rem, 4vw, 1.8rem);
+      border-bottom: 1px solid rgba(212, 175, 55, 0.3);
+      font-family: 'Playfair Display', serif;
+      font-weight: 600;
+      font-size: clamp(1.2rem, 5vw, 1.6rem);
+      background: linear-gradient(135deg, var(--gold), #c9a03d);
+      background-clip: text;
+      -webkit-background-clip: text;
+      color: transparent;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .menu-header .close-menu-icon {
+      background: rgba(212, 175, 55, 0.2);
+      border: 1px solid var(--gold-dim);
+      border-radius: 50%;
+      width: 32px;
+      height: 32px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      font-size: 1.2rem;
+      transition: 0.2s;
+      color: var(--gold);
+    }
+
+    .menu-header .close-menu-icon:hover {
+      background: rgba(212, 175, 55, 0.5);
+      transform: scale(1.05);
+    }
+
+    /* Profile picture section in menu */
+    .profile-section {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      background: rgba(20, 22, 32, 0.7);
+      border-radius: 60px;
+      padding: 12px 20px;
+      margin: 12px 16px;
+      border: 1px solid rgba(212, 175, 55, 0.3);
+    }
+
+    .avatar-container {
+      position: relative;
+      width: 56px;
+      height: 56px;
+      flex-shrink: 0;
+    }
+
+    .avatar-img {
+      width: 100%;
+      height: 100%;
+      border-radius: 50%;
+      object-fit: cover;
+      border: 2px solid var(--gold);
+      background: #2a2e3c;
+    }
+
+    .avatar-edit-btn {
+      position: absolute;
+      bottom: -4px;
+      right: -4px;
+      width: 24px;
+      height: 24px;
+      background: linear-gradient(145deg, #3a3f50, #252a38);
+      border: 2px solid var(--gold);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 12px;
+      cursor: pointer;
+      transition: all 0.2s;
+      color: var(--gold);
+      padding: 0;
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
+    }
+
+    .avatar-placeholder {
+      width: 48px;
+      height: 48px;
+      border-radius: 50%;
+      background: linear-gradient(145deg, #3a3f50, #252a38);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.8rem;
+      border: 2px solid var(--gold-dim);
+    }
+
+    .avatar-edit-btn:hover {
+      transform: scale(1.08);
+      background: linear-gradient(145deg, #4a5066, #3a3f50);
+    }
+
+    .profile-info {
+      flex: 1;
+    }
+
+    .profile-username {
+      font-weight: 600;
+      color: var(--gold);
+      font-size: 1rem;
+    }
+
+    .upload-avatar-btn {
+      background: rgba(212, 175, 55, 0.2);
+      border: 1px solid var(--gold-dim);
+      border-radius: 40px;
+      padding: 4px 10px;
+      font-size: 0.7rem;
+      cursor: pointer;
+      color: var(--gold);
+      transition: 0.2s;
+    }
+
+    .upload-avatar-btn:hover {
+      background: rgba(212, 175, 55, 0.4);
+    }
+
+    .menu-item {
+      background: rgba(20, 22, 32, 0.7);
+      border: 1px solid rgba(212, 175, 55, 0.3);
+      border-radius: 60px;
+      padding: 0.7rem 1.2rem;
+      font-size: clamp(0.85rem, 2.8vw, 1rem);
+      font-weight: 500;
+      color: var(--text-light);
+      cursor: pointer;
+      transition: all 0.2s;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      backdrop-filter: blur(4px);
+    }
+
+    .menu-item:hover {
+      background: rgba(212, 175, 55, 0.25);
+      border-color: var(--gold);
+      transform: translateX(4px);
+    }
+
+    .info-text {
+      font-size: 0.75rem;
+      color: var(--text-muted);
+      text-align: center;
+      margin-top: 0.5rem;
+    }
+
+    /* ===== GAME HEADER & STATUS ===== */
     .game-header {
       text-align: center;
       margin-bottom: clamp(0.8rem, 2vh, 1.2rem);
+      margin-left: 0;
     }
 
     .game-header h1 {
@@ -84,7 +810,6 @@
       color: var(--text-muted);
     }
 
-    /* STATUS ROW — ALWAYS ONE LINE, NO WRAP */
     .status-row {
       display: flex;
       justify-content: space-between;
@@ -94,10 +819,8 @@
       max-width: 1100px;
       margin: 0 auto clamp(1rem, 2.5vh, 1.8rem) auto;
       flex-wrap: nowrap;
-      /* CRITICAL: never wrap to next line */
     }
 
-    /* status-bar — flexible, resizes text inside */
     .status-bar {
       background: var(--bg-card);
       backdrop-filter: blur(12px);
@@ -108,13 +831,9 @@
       align-items: center;
       gap: clamp(8px, 1.6vw, 18px);
       flex-wrap: nowrap;
-      /* inner items stay in one line */
       justify-content: space-between;
       flex: 1;
-      /* take remaining space */
       min-width: 0;
-      /* allow shrinking */
-      transition: all 0.1s ease;
     }
 
     .status-left {
@@ -170,7 +889,6 @@
       flex-shrink: 0;
     }
 
-    /* CHAT TOGGLE BUTTON — always stays on the same line */
     .chat-toggle-btn {
       display: flex;
       align-items: center;
@@ -228,46 +946,19 @@
       pointer-events: none;
     }
 
-    /* extra media: guarantee no text overflow & all in one line on smallest screens */
-    @media (max-width: -550px) {
-      .status-bar {
-        padding: 0px 1px;
-        gap: 6px;
-      }
-
+    @media (max-width: 550px) {
       .status-text {
-        font-size: 0.92rem;
-        max-width: 150px;
+        font-size: 0.75rem;
+        max-width: 120px;
       }
 
       .color-badge {
         font-size: 0.55rem;
         padding: 3px 8px;
       }
-
-      .chat-toggle-btn {
-        width: 42px;
-        height: 42px;
-      }
-
-      .status-row {
-        gap: 6px;
-      }
     }
 
-    @media (max-width: -450px) {
-      .status-text {
-        max-width: 100px;
-        font-size: 0.58rem;
-      }
-
-      .color-badge {
-        font-size: 0.5rem;
-        padding: 2px 6px;
-      }
-    }
-
-    /* board styling */
+    /* ===== BOARD & PIECES ===== */
     .game-layout {
       display: flex;
       justify-content: center;
@@ -388,8 +1079,6 @@
       filter: drop-shadow(0 3px 4px rgba(0, 0, 0, 0.3));
       pointer-events: none;
       user-select: none;
-      filter: none !important;
-      -webkit-filter: none !important;
     }
 
     @media (max-width: 560px) {
@@ -435,10 +1124,6 @@
       text-align: left;
     }
 
-    .board-container {
-      position: relative;
-    }
-
     @media (max-width: 680px) {
 
       .rank-labels,
@@ -447,7 +1132,7 @@
       }
     }
 
-    /* SLIDER PANEL */
+    /* ===== CHAT SLIDER ===== */
     .chat-slider {
       position: fixed;
       left: 0;
@@ -593,6 +1278,7 @@
       border-color: var(--gold);
     }
 
+    /* ===== RESULT OVERLAY ===== */
     #result-overlay {
       display: none;
       position: fixed;
@@ -680,6 +1366,42 @@
       border-radius: 10px;
     }
 
+    .theme-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 12px;
+    }
+
+    .theme-card {
+      border-radius: 14px;
+      overflow: hidden;
+      cursor: pointer;
+      border: 2px solid transparent;
+      transition: 0.2s;
+    }
+
+    .theme-card:hover {
+      transform: scale(1.05);
+      border-color: gold;
+    }
+
+    .theme-preview {
+      width: 100%;
+      aspect-ratio: 1;
+      display: grid;
+      grid-template-columns: repeat(8, 1fr);
+    }
+
+    .theme-preview div {
+      width: 100%;
+      height: 100%;
+    }
+
+    .theme-card.active {
+      border-color: #d4af37;
+      box-shadow: 0 0 10px #d4af37;
+    }
+
     body,
     html {
       overflow-x: hidden;
@@ -690,56 +1412,511 @@
       overflow: hidden;
     }
 
-    @media (max-height: 700px) and (orientation: landscape) {
-      .glass-card {
-        height: 70vh;
-        max-height: 80vh;
-        min-height: 280px;
+    #cancel-search-btn {
+      margin-top: 1rem;
+      background: linear-gradient(145deg, #7a1e1e, #4a1212);
+      border: none;
+      padding: 0.7rem 1.8rem;
+      font-size: 1rem;
+      font-weight: 600;
+      border-radius: 40px;
+      color: #fff;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      box-shadow: 0 0 10px rgba(255, 80, 80, 0.5);
+    }
+
+    #cancel-search-btn:hover {
+      background: linear-gradient(145deg, #a83232, #6a1c1c);
+      transform: scale(1.05);
+    }
+
+    #cancel-search-btn:active {
+      transform: scale(0.95);
+    }
+
+    .versus-player-info {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      margin-top: 12px;
+      background: rgba(0, 0, 0, 0.4);
+      padding: 6px 12px;
+      border-radius: 60px;
+      backdrop-filter: blur(4px);
+    }
+
+    .versus-avatar {
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      object-fit: cover;
+      border: 1px solid var(--gold);
+      background: #2a2e3c;
+    }
+
+    .versus-username {
+      font-size: 0.85rem;
+      font-weight: 500;
+      color: var(--text-light);
+      max-width: 120px;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    @media (max-width: 550px) {
+      .versus-avatar {
+        width: 26px;
+        height: 26px;
       }
+
+      .versus-username {
+        font-size: 0.7rem;
+        max-width: 90px;
+      }
+
+      .versus-player-info {
+        padding: 4px 8px;
+        gap: 4px;
+      }
+    }
+
+    .matchmaking-profile {
+      background: var(--bg-card);
+      backdrop-filter: blur(12px);
+      border-radius: 60px;
+      padding: 0.5rem 1.2rem;
+      margin: 1rem auto 1.5rem auto;
+      width: fit-content;
+      min-width: 220px;
+      border: 1px solid rgba(212, 175, 55, 0.4);
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      justify-content: center;
+    }
+
+    .matchmaking-profile .avatar-container {
+      width: 48px;
+      height: 48px;
+      flex-shrink: 0;
+    }
+
+    .matchmaking-profile .avatar-img {
+      width: 100%;
+      height: 100%;
+      border-radius: 50%;
+      object-fit: cover;
+      border: 2px solid var(--gold);
+    }
+
+    .matchmaking-profile .profile-info {
+      text-align: left;
+    }
+
+    .matchmaking-profile .profile-username {
+      font-weight: 600;
+      color: var(--gold);
+      font-size: 1rem;
+    }
+
+    .matchmaking-profile .upload-avatar-btn,
+    .matchmaking-profile .logout-btn {
+      background: rgba(212, 175, 55, 0.2);
+      border: 1px solid var(--gold-dim);
+      border-radius: 40px;
+      padding: 4px 12px;
+      font-size: 0.7rem;
+      cursor: pointer;
+      color: var(--gold);
+      transition: 0.2s;
+      margin-top: 4px;
+      display: inline-block;
+    }
+
+    .matchmaking-profile .upload-avatar-btn:hover,
+    .matchmaking-profile .logout-btn:hover {
+      background: rgba(212, 175, 55, 0.4);
+    }
+
+    /* Image Modal - WhatsApp style zoom */
+    .image-modal {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.95);
+      z-index: 10000;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      backdrop-filter: blur(8px);
+    }
+
+    .image-modal.show {
+      display: flex;
+    }
+
+    .modal-image-container {
+      max-width: 90vw;
+      max-height: 90vh;
+      text-align: center;
+      animation: zoomIn 0.2s ease-out;
+    }
+
+    .modal-image {
+      max-width: 100%;
+      max-height: 90vh;
+      object-fit: contain;
+      border-radius: 12px;
+      box-shadow: 0 0 40px rgba(0, 0, 0, 0.5);
+      border: 2px solid rgba(212, 175, 55, 0.5);
+    }
+
+    .modal-close {
+      position: absolute;
+      top: 20px;
+      right: 30px;
+      font-size: 40px;
+      color: white;
+      cursor: pointer;
+      font-weight: bold;
+      transition: 0.2s;
+      z-index: 10001;
+      font-family: monospace;
+      background: rgba(0, 0, 0, 0.5);
+      width: 50px;
+      height: 50px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .modal-close:hover {
+      color: var(--gold);
+      transform: scale(1.1);
+    }
+
+    @keyframes zoomIn {
+      from {
+        transform: scale(0.8);
+        opacity: 0;
+      }
+
+      to {
+        transform: scale(1);
+        opacity: 1;
+      }
+    }
+
+    .avatar-loading {
+      position: relative;
+    }
+
+    .avatar-loading::after {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      border-radius: 50%;
+      background: rgba(0, 0, 0, 0.6);
+      backdrop-filter: blur(2px);
+    }
+
+    .avatar-loading .spinner {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      width: 30px;
+      height: 30px;
+      margin: -15px 0 0 -15px;
+      border: 3px solid rgba(212, 175, 55, 0.3);
+      border-top-color: var(--gold);
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+      z-index: 5;
+    }
+
+    @keyframes spin {
+      to {
+        transform: rotate(360deg);
+      }
+    }
+
+    .password-wrapper {
+      position: relative;
+    }
+
+    .password-toggle {
+      position: absolute;
+      right: 16px;
+      top: 50%;
+      transform: translateY(-50%);
+      cursor: pointer;
+      font-size: 1.2rem;
+      opacity: 0.7;
+      transition: opacity 0.2s;
+      user-select: none;
+    }
+
+    .password-toggle:hover {
+      opacity: 1;
+    }
+
+    .profile-row {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      background: rgba(20, 22, 32, 0.7);
+      border-radius: 60px;
+      padding: 12px 20px;
+      margin: 12px 16px;
+      border: 1px solid rgba(212, 175, 55, 0.3);
+    }
+
+    .profile-row .profile-username {
+      flex: 1;
+      font-weight: 600;
+      color: var(--gold);
+      font-size: 1rem;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .logout-icon {
+      width: 28px;
+      height: 28px;
+      cursor: pointer;
+      transition: transform 0.2s, opacity 0.2s;
+      opacity: 0.8;
+      filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.3));
+    }
+
+    .logout-icon:hover {
+      transform: scale(1.1);
+      opacity: 1;
+    }
+
+    /* Premium Logout Confirmation Modal */
+    .confirm-modal {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.85);
+      backdrop-filter: blur(12px);
+      align-items: center;
+      justify-content: center;
+      z-index: 3500;
+      animation: fadeInBg 0.2s ease;
+    }
+
+    .confirm-modal-content {
+      background: var(--bg-card);
+      backdrop-filter: blur(20px);
+      border-radius: var(--radius-md);
+      border: 1px solid var(--gold);
+      padding: clamp(1.5rem, 5vw, 2.5rem) clamp(1.5rem, 6vw, 3rem);
+      text-align: center;
+      max-width: 400px;
+      width: 85%;
+      box-shadow: 0 25px 40px rgba(0, 0, 0, 0.5);
+      animation: pop 0.3s cubic-bezier(0.34, 1.2, 0.64, 1);
+    }
+
+    .confirm-header {
+      font-family: 'Playfair Display', serif;
+      font-size: clamp(1.2rem, 5vw, 1.8rem);
+      background: linear-gradient(135deg, #e6d5a8, #c2a14b);
+      background-clip: text;
+      -webkit-background-clip: text;
+      color: transparent;
+      margin-bottom: 1rem;
+      font-weight: 600;
+    }
+
+    .confirm-message {
+      color: var(--text-light);
+      font-size: clamp(0.9rem, 3vw, 1rem);
+      margin-bottom: 2rem;
+    }
+
+    .confirm-buttons {
+      display: flex;
+      gap: 1rem;
+      justify-content: center;
+      flex-wrap: wrap;
+    }
+
+    .confirm-btn {
+      background: rgba(20, 22, 32, 0.9);
+      border: 1px solid var(--gold-dim);
+      border-radius: 60px;
+      padding: 0.7rem 1.5rem;
+      font-size: clamp(0.8rem, 2.5vw, 0.95rem);
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s;
+      color: var(--text-light);
+    }
+
+    .confirm-btn.yes {
+      background: linear-gradient(145deg, #7a1e1e, #4a1212);
+      border-color: #e6685c;
+      color: white;
+    }
+
+    .confirm-btn.yes:hover {
+      background: linear-gradient(145deg, #a83232, #6a1c1c);
+      transform: scale(1.02);
+      border-color: var(--gold);
+    }
+
+    .confirm-btn.no {
+      background: linear-gradient(145deg, #2a6e4b, #1e543a);
+      border-color: var(--gold);
+    }
+
+    .confirm-btn.no:hover {
+      background: linear-gradient(145deg, #35805a, #286b46);
+      transform: scale(1.02);
+    }
+
+    .confirm-btn:active {
+      transform: scale(0.98);
     }
   </style>
 </head>
 
 <body>
 
-  <div class="game-header">
-    <h1>♔ ROYAL CHESS</h1>
-    <p>Two‑player · Live · Fluid Chat</p>
-  </div>
-
-  <div class="status-row">
-    <div class="status-bar">
-      <div class="status-left">
-        <div class="status-dot" id="conn-dot"></div>
-        <span class="status-text" id="status-msg">Connecting...</span>
+  <!-- LOGIN OVERLAY (updated) -->
+  <div id="login-overlay" style="display: none;">
+    <div class="login-container">
+      <h1>♔ ROYAL CHESS ♔</h1>
+      <p>Login or Register to begin</p>
+      <div class="login-input-group">
+        <input type="text" id="login-username" placeholder="Username (3-20 chars, letters/numbers/_ )" maxlength="20"
+          autocomplete="off">
       </div>
-      <div class="color-badge" id="color-badge" style="display: none;"></div>
-    </div>
-    <div class="chat-toggle-btn" id="chatToggleBtn">
-      <img src="assets/chat.png" class="chat-icon" alt="chat">
-      <span class="chat-badge" id="chatBadge" style="display: none;">0</span>
-    </div>
-  </div>
-
-  <div class="game-layout">
-    <div class="board-wrapper">
-      <div class="board-container">
-        <div class="rank-labels" id="rank-left"></div>
-        <div id="board"></div>
-        <div class="rank-labels right" id="rank-right"></div>
+      <div class="login-input-group password-wrapper">
+        <input type="password" id="login-password" placeholder="Password (min 4 chars)" maxlength="100">
+        <span class="password-toggle" id="togglePassword">👁️</span>
       </div>
-      <div class="coordinates" id="file-labels"></div>
+      <div class="login-buttons">
+        <button class="login-btn" id="login-btn">🔑 LOGIN</button>
+        <button class="login-btn secondary" id="register-btn">📝 REGISTER</button>
+      </div>
+      <div class="login-error" id="login-error"></div>
+      <div class="login-hint">✦ Auto-login enabled after first success ✦<br>✦ Upload your avatar later in the menu ✦
+      </div>
     </div>
   </div>
 
-  <div id="chatSlider" class="chat-slider">
-    <div class="glass-card">
-      <div class="card-header">💬 Royal Chat</div>
-      <div id="chat-log" class="chat-messages"></div>
-      <div class="chat-input-wrapper">
-        <input id="chat-input" type="text" placeholder="Type a message..." maxlength="200"
-          onkeydown="if(event.key==='Enter')sendChat()">
-        <button onclick="sendChat()">Send</button>
+  <!-- MATCHMAKING OVERLAY -->
+  <div id="matchmaking-overlay" style="display: none;">
+    <div class="match-header">
+      <h1>♔ ROYAL CHESS ♔</h1>
+      <p>Find an opponent to start</p>
+    </div>
+    <div id="matchmaking-profile" class="matchmaking-profile"></div>
+    <button id="find-match-btn">🔍 FIND MATCH</button>
+    <div id="match-status">Press the button to search</div>
+  </div>
+
+  <!-- PREMIUM SEARCHING ANIMATION -->
+  <div id="searching-animation">
+    <div class="search-radar">
+      <div class="radar-ring"></div>
+      <div class="radar-ring"></div>
+      <div class="radar-ring"></div>
+      <div class="knight-search"></div>
+    </div>
+    <div class="search-text-glow">Searching for opponent</div>
+    <div class="search-dots"><span></span><span></span><span></span></div>
+    <button id="cancel-search-btn">Cancel</button>
+  </div>
+
+  <!-- VERSUS PREMIUM ANIMATION -->
+  <div id="versus-overlay">
+    <div class="versus-container">
+      <div class="versus-side left">
+        <div class="versus-crown">👑</div>
+        <div class="versus-icon">WHITE</div>
+        <div class="versus-player-info">
+          <img class="versus-avatar" id="whiteAvatarImg" src="" alt="avatar">
+          <span class="versus-username" id="whiteUsernameSpan">White Player</span>
+        </div>
+      </div>
+      <div class="versus-divider">VS</div>
+      <div class="versus-side right">
+        <div class="versus-crown">👑</div>
+        <div class="versus-icon">BLACK</div>
+        <div class="versus-player-info">
+          <img class="versus-avatar" id="blackAvatarImg" src="" alt="avatar">
+          <span class="versus-username" id="blackUsernameSpan">Black Player</span>
+        </div>
+      </div>
+    </div>
+    <div class="versus-sub">✦ BATTLE BEGINS ✦</div>
+    <div class="versus-sword">⚔️</div>
+  </div>
+
+  <!-- CHESS UI (hidden until match starts) -->
+  <div id="chess-game-container">
+    <div class="hamburger-btn" id="hamburgerBtn">☰</div>
+    <div id="menuPanel" class="menu-slider">
+      <div class="menu-glass">
+        <div class="menu-header">
+          <span>⚜️ Game Menu</span>
+          <div class="close-menu-icon" id="closeMenuBtn">✕</div>
+        </div>
+        <div class="menu-contet" id="menuContent"
+          style="flex: 1; padding: clamp(0.8rem, 3vw, 1rem); display: flex; flex-direction: column; gap: 1rem; overflow-y: auto;">
+          <!-- Profile section will be injected here -->
+        </div>
+      </div>
+    </div>
+    <div class="game-header">
+      <h1>♔ ROYAL CHESS ♔</h1>
+      <p>Two-player · Live · Fluid Chat</p>
+    </div>
+    <div class="status-row">
+      <div class="status-bar">
+        <div class="status-left">
+          <div class="status-dot" id="conn-dot"></div>
+          <span class="status-text" id="status-msg">Connecting...</span>
+        </div>
+        <div class="color-badge" id="color-badge" style="display: none;"></div>
+      </div>
+      <div class="chat-toggle-btn" id="chatToggleBtn">
+        <img src="assets/chat.png" class="chat-icon" alt="chat">
+        <span class="chat-badge" id="chatBadge" style="display: none;">0</span>
+      </div>
+    </div>
+    <div class="game-layout">
+      <div class="board-wrapper">
+        <div class="board-container">
+          <div class="rank-labels" id="rank-left"></div>
+          <div id="board"></div>
+          <div class="rank-labels right" id="rank-right"></div>
+        </div>
+        <div class="coordinates" id="file-labels"></div>
+      </div>
+    </div>
+    <div id="chatSlider" class="chat-slider">
+      <div class="glass-card">
+        <div class="card-header">💬 Royal Chat</div>
+        <div id="chat-log" class="chat-messages"></div>
+        <div class="chat-input-wrapper">
+          <input id="chat-input" type="text" placeholder="Type a message..." maxlength="200"
+            onkeydown="if(event.key==='Enter')sendChat()">
+          <button onclick="sendChat()">Send</button>
+        </div>
       </div>
     </div>
   </div>
@@ -751,21 +1928,88 @@
       <button onclick="closeResult()">New Game</button>
     </div>
   </div>
+  <div id="logout-confirm-modal" class="confirm-modal">
+    <div class="confirm-modal-content">
+      <div class="confirm-header">👑 Logout Confirmation</div>
+      <div class="confirm-message">Are you sure you want to log out?</div>
+      <div class="confirm-buttons">
+        <button id="confirm-logout-yes" class="confirm-btn yes">✔ Yes, Logout</button>
+        <button id="confirm-logout-no" class="confirm-btn no">✖ Cancel</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="reconnect-overlay"
+    style="display: none; position: fixed; bottom: 20px; left: 20px; background: rgba(0,0,0,0.7); color: gold; padding: 8px 16px; border-radius: 30px; z-index: 3000; font-size: 0.9rem;">
+    🔌 Connection lost - reconnecting...</div>
 
   <script>
+    // ========== PIECES & CONSTANTS ==========
     const PIECE_IMG_MAP = {
       'K': 'wk', 'Q': 'wq', 'R': 'wr', 'B': 'wb', 'N': 'wn', 'P': 'wp',
       'k': 'bk', 'q': 'bq', 'r': 'br', 'b': 'bb', 'n': 'bn', 'p': 'bp'
     };
-    function getPieceImagePath(pieceChar) {
-      const code = PIECE_IMG_MAP[pieceChar];
-      return code ? `assets/pieces/${code}.png` : '';
-    }
+    const THEMES = [
+      { name: "Classic", light: "#f0e2b6", dark: "#6b4c3b" },
+      { name: "Blue", light: "#dee3e6", dark: "#4a6fa5" },
+      { name: "Green", light: "#e8f5e9", dark: "#2e7d32" },
+      { name: "Purple", light: "#f3e5f5", dark: "#6a1b9a" },
+      { name: "Grey", light: "#eeeeee", dark: "#616161" },
+      { name: "Ocean", light: "#d0f0fd", dark: "#0077b6" },
+      { name: "Sunset", light: "#ffe0b2", dark: "#e65100" },
+      { name: "Pink", light: "#fce4ec", dark: "#ad1457" },
+      { name: "Neon", light: "#ccff90", dark: "#00c853" },
+      { name: "Dark Pro", light: "#999999", dark: "#222222" }
+    ];
 
-    let ws = null, myColor = null, currentFen = 'rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1';
-    let currentTurn = 'white', legalMoves = [], selected = null, lastMove = null, inCheck = false, gameOver = false, previousFen = null, gameOverPlayed = false;
+    // Global variables
+    let ws = null;
+    let myColor = null;
+    let currentFen = 'rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1';
+    let currentTurn = 'white';
+    let legalMoves = [];
+    let selected = null;
+    let lastMove = null;
+    let inCheck = false;
+    let gameOver = false;
+    let previousFen = null;
+    let gameOverPlayed = false;
+    let currentUsername = null;
+    let currentToken = null;
+    let isAuthenticated = false;
+    let currentAvatar = null;
+    let reconnectAttempts = 0;
+    let reconnectTimeout = null;
+    let pendingReconnect = false;
+    let manualClose = false;           // true when we intentionally close the connection
+    let lastPongTime = Date.now();     // for client-side heartbeat
+    let heartbeatInterval = null;      // timer reference
 
-    // Enhanced sound: supports move, capture, gameover, success, notification, chat_send, chat_receive
+    // DOM elements
+    const loginOverlay = document.getElementById('login-overlay');
+    const matchmakingOverlay = document.getElementById('matchmaking-overlay');
+    const gameContainer = document.getElementById('chess-game-container');
+    const findBtn = document.getElementById('find-match-btn');
+    const matchStatus = document.getElementById('match-status');
+    const searchAnim = document.getElementById('searching-animation');
+    const versusOverlay = document.getElementById('versus-overlay');
+    const cancelSearchBtn = document.getElementById('cancel-search-btn');
+    const loginUsername = document.getElementById('login-username');
+    const loginPassword = document.getElementById('login-password');
+    const loginBtn = document.getElementById('login-btn');
+    const registerBtn = document.getElementById('register-btn');
+    const loginError = document.getElementById('login-error');
+    const togglePassword = document.getElementById('togglePassword');
+    const passwordInput = document.getElementById('login-password');
+    const logoutModal = document.getElementById('logout-confirm-modal');
+    const confirmYes = document.getElementById('confirm-logout-yes');
+    const confirmNo = document.getElementById('confirm-logout-no');
+
+
+
+    // Helper functions (unchanged from original)
+    function getPieceImagePath(pieceChar) { const code = PIECE_IMG_MAP[pieceChar]; return code ? `assets/pieces/${code}.png` : ''; }
+
     function playSound(type) {
       let src = '';
       if (type === 'capture') src = 'assets/sounds/capture.ogg';
@@ -781,45 +2025,8 @@
       audio.play().catch(e => console.warn('Audio:', e));
     }
 
-    function fenToPieceArray(fen) {
-      const pieces = Array(64).fill(null);
-      const rows = fen.split(' ')[0].split('/');
-      for (let r = 0; r < 8; r++) {
-        const row = rows[7 - r];
-        let col = 0;
-        for (const ch of row) {
-          if (!isNaN(ch)) col += parseInt(ch);
-          else { pieces[r * 8 + col] = ch; col++; }
-        }
-      }
-      return pieces;
-    }
-    function wasCapture(oldFen, newFen) {
-      const oldBoard = fenToPieceArray(oldFen);
-      const newBoard = fenToPieceArray(newFen);
-      return newBoard.filter(p => p !== null).length < oldBoard.filter(p => p !== null).length;
-    }
-
-    let unreadCount = 0;
-    const chatToggleBtn = document.getElementById('chatToggleBtn');
-    const chatSlider = document.getElementById('chatSlider');
-    const chatBadge = document.getElementById('chatBadge');
-    function updateBadge() {
-      if (unreadCount > 0) {
-        chatBadge.textContent = unreadCount > 99 ? '99+' : unreadCount;
-        chatBadge.style.display = 'flex';
-      } else chatBadge.style.display = 'none';
-    }
-    function clearUnreadCount() { if (unreadCount !== 0) { unreadCount = 0; updateBadge(); } }
-    function isChatPanelOpen() { return chatSlider.classList.contains('open'); }
-    function onChatOpened() { clearUnreadCount(); }
-    function maybeIncrementUnread(messageFrom, isSystem = false) {
-      if (!isSystem && messageFrom === myColor) return;
-      if (isChatPanelOpen()) return;
-      unreadCount++;
-      updateBadge();
-    }
-
+    function fenToPieceArray(fen) { const pieces = Array(64).fill(null); const rows = fen.split(' ')[0].split('/'); for (let r = 0; r < 8; r++) { const row = rows[7 - r]; let col = 0; for (const ch of row) { if (!isNaN(ch)) col += parseInt(ch); else { pieces[r * 8 + col] = ch; col++; } } } return pieces; }
+    function wasCapture(oldFen, newFen) { const oldBoard = fenToPieceArray(oldFen); const newBoard = fenToPieceArray(newFen); return newBoard.filter(p => p !== null).length < oldBoard.filter(p => p !== null).length; }
     function uciToIdx(uci) { return (parseInt(uci[1]) - 1) * 8 + (uci.charCodeAt(0) - 97); }
     function idxToAlg(idx) { return String.fromCharCode(97 + (idx % 8)) + (Math.floor(idx / 8) + 1); }
 
@@ -876,7 +2083,6 @@
           img.className = 'piece-img';
           img.onerror = () => {
             img.style.display = 'none';
-            sq.style.fontSize = 'clamp(1.5rem, 8vw, 2.5rem)';
             const symbolMap = { 'K': '♔', 'Q': '♕', 'R': '♖', 'B': '♗', 'N': '♘', 'P': '♙', 'k': '♚', 'q': '♛', 'r': '♜', 'b': '♝', 'n': '♞', 'p': '♟' };
             sq.innerText = symbolMap[pieceChar] || pieceChar;
           };
@@ -889,7 +2095,11 @@
           if (moveable) {
             sq.classList.add('clickable');
             if (pieceChar) sq.classList.add('capture-hint');
-            else { const dot = document.createElement('div'); dot.className = 'dot-move'; sq.appendChild(dot); }
+            else {
+              const dot = document.createElement('div');
+              dot.className = 'dot-move';
+              sq.appendChild(dot);
+            }
           }
         } else if (!gameOver && myColor === currentTurn && pieceChar) {
           const isOwn = myColor === 'white' ? pieceChar === pieceChar.toUpperCase() : pieceChar === pieceChar.toLowerCase();
@@ -900,9 +2110,16 @@
 
     function handleClick(idx) {
       if (gameOver || !ws || myColor !== currentTurn) return;
+      if (ws.readyState !== WebSocket.OPEN) {
+        addChat('sys', '⚠ Connection lost – please wait for reconnection.');
+        return;
+      }
       const alg = idxToAlg(idx);
       if (selected === null) {
-        if (legalMoves.some(m => m.startsWith(alg))) { selected = idx; renderFen(currentFen); }
+        if (legalMoves.some(m => m.startsWith(alg))) {
+          selected = idx;
+          renderFen(currentFen);
+        }
       } else {
         const fromAlg = idxToAlg(selected);
         const move = fromAlg + alg;
@@ -917,11 +2134,22 @@
         }
       }
     }
+
     function sendMove(uci) { if (ws) ws.send(JSON.stringify({ type: 'move', move: uci })); selected = null; }
-    function updateLastMove(uci) {
-      if (uci && uci.length >= 4) lastMove = { from: uciToIdx(uci.slice(0, 2)), to: uciToIdx(uci.slice(2, 4)) };
-      else lastMove = null;
-    }
+    function updateLastMove(uci) { if (uci && uci.length >= 4) lastMove = { from: uciToIdx(uci.slice(0, 2)), to: uciToIdx(uci.slice(2, 4)) }; else lastMove = null; }
+
+    // Chat functions
+    let unreadCount = 0;
+    const chatToggleBtn = document.getElementById('chatToggleBtn');
+    const chatSlider = document.getElementById('chatSlider');
+    const chatBadge = document.getElementById('chatBadge');
+
+    function updateBadge() { if (unreadCount > 0) { chatBadge.textContent = unreadCount > 99 ? '99+' : unreadCount; chatBadge.style.display = 'flex'; } else chatBadge.style.display = 'none'; }
+    function clearUnreadCount() { if (unreadCount !== 0) { unreadCount = 0; updateBadge(); } }
+    function isChatPanelOpen() { return chatSlider.classList.contains('open'); }
+    function onChatOpened() { clearUnreadCount(); }
+    function maybeIncrementUnread(messageFrom, isSystem = false) { if (!isSystem && messageFrom === myColor) return; if (isChatPanelOpen()) return; unreadCount++; updateBadge(); }
+
     function addChat(from, text) {
       const log = document.getElementById('chat-log');
       if (!log) return;
@@ -940,18 +2168,9 @@
       log.appendChild(div);
       log.scrollTop = log.scrollHeight;
     }
-    function escapeHtml(str) { return str.replace(/[&<>]/g, m => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;' }[m])); }
 
-    function sendChat() {
-      const inp = document.getElementById('chat-input');
-      const text = inp.value.trim();
-      if (text && ws) {
-        ws.send(JSON.stringify({ type: 'chat', text }));
-        // Play send sound on sender's device
-        playSound('chat_send');
-      }
-      inp.value = '';
-    }
+    function escapeHtml(str) { return str.replace(/[&<>]/g, m => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;' }[m])); }
+    function sendChat() { const inp = document.getElementById('chat-input'); const text = inp.value.trim(); if (text && ws) { ws.send(JSON.stringify({ type: 'chat', text })); playSound('chat_send'); } inp.value = ''; }
 
     function setStatus(msg, dotClass, showBadge) {
       document.getElementById('status-msg').textContent = msg;
@@ -965,25 +2184,17 @@
       } else badge.style.display = 'none';
     }
 
-    // Enhanced game over display: winner gets congratulatory message, loser gets defeat message
     function showGameOverResult(resultMsg) {
       gameOver = true;
-      let displayTitle = '';
-      let displaySub = resultMsg;
-      // Parse winner from result string (e.g., "White wins by checkmate" or "Black wins by checkmate")
+      let displayTitle = '', displaySub = resultMsg;
       const lowerResult = resultMsg.toLowerCase();
       let winnerColor = null;
       if (lowerResult.includes('white wins')) winnerColor = 'white';
       else if (lowerResult.includes('black wins')) winnerColor = 'black';
-
       if (winnerColor) {
-        if (myColor === winnerColor) {
-          displayTitle = '✨ Congratulations! You Win 🤓!! ✨';
-        } else {
-          displayTitle = '💔 You Lose !! 😞';
-        }
+        if (myColor === winnerColor) displayTitle = '✨ Congratulations! You Win 🤓!! ✨';
+        else displayTitle = '💔 You Lose !! 😞';
       } else {
-        // Handle draws or unknown outcomes
         if (lowerResult.includes('draw') || lowerResult.includes('stalemate')) {
           displayTitle = '♟️ Game Over – Draw ♟️';
           displaySub = resultMsg;
@@ -999,17 +2210,15 @@
 
     function closeResult() { window.location.reload(); }
 
-    // outside click to close chat slider 
-    function setupOutsideClickToClose() {
-      document.addEventListener('click', (e) => {
-        if (!chatSlider.classList.contains('open')) return;
-        const isToggle = chatToggleBtn.contains(e.target);
-        const isInsideSlider = chatSlider.contains(e.target);
-        if (!isInsideSlider && !isToggle) {
-          chatSlider.classList.remove('open');
-          onChatOpened();
-        }
-      });
+    function playGameEndSounds(resultMsg) {
+      let winner = null, loser = null;
+      if (resultMsg.includes('White wins')) { winner = 'white'; loser = 'black'; }
+      else if (resultMsg.includes('Black wins')) { winner = 'black'; loser = 'white'; }
+      else if (resultMsg.toLowerCase().includes('draw') || resultMsg.toLowerCase().includes('stalemate')) { playSound('draw'); return; }
+      if (winner && myColor) {
+        if (myColor === winner) playSound('success');
+        else if (myColor === loser) playSound('gameover');
+      }
     }
 
     function initChatToggle() {
@@ -1023,100 +2232,745 @@
       }
     }
 
-    function playGameEndSounds(resultMsg) {
-      let winner = null;
-      let loser = null;
-      if (resultMsg.includes('White wins')) {
-        winner = 'white';
-        loser = 'black';
-      } else if (resultMsg.includes('Black wins')) {
-        winner = 'black';
-        loser = 'white';
-      } else if (resultMsg.toLowerCase().includes('draw') || resultMsg.toLowerCase().includes('stalemate')) {
-        // 👈 ADD DRAW HANDLING
-        playSound('draw');
-        return;
+    function setupOutsideClickToCloseChat() {
+      document.addEventListener('click', (e) => {
+        if (!chatSlider.classList.contains('open')) return;
+        const isToggle = chatToggleBtn.contains(e.target);
+        const isInsideSlider = chatSlider.contains(e.target);
+        if (!isInsideSlider && !isToggle) {
+          chatSlider.classList.remove('open');
+          onChatOpened();
+        }
+      });
+    }
+
+    function createThemeMenu() {
+      const container = document.getElementById("menuContent");
+      if (!container) return;
+      // Remove old theme grid if exists
+      const oldGrid = container.querySelector('.theme-grid');
+      if (oldGrid) oldGrid.remove();
+      const grid = document.createElement("div");
+      grid.className = "theme-grid";
+      THEMES.forEach((theme, index) => {
+        const card = document.createElement("div");
+        card.className = "theme-card";
+        const preview = document.createElement("div");
+        preview.className = "theme-preview";
+        for (let i = 0; i < 64; i++) {
+          const sq = document.createElement("div");
+          const isDark = (Math.floor(i / 8) + (i % 8)) % 2;
+          sq.style.background = isDark ? theme.dark : theme.light;
+          preview.appendChild(sq);
+        }
+        card.appendChild(preview);
+        card.onclick = () => applyTheme(theme, card);
+        grid.appendChild(card);
+      });
+      container.appendChild(grid);
+    }
+
+    function applyTheme(theme, selectedCard) {
+      document.documentElement.style.setProperty('--light-sq', theme.light);
+      document.documentElement.style.setProperty('--dark-sq', theme.dark);
+      document.querySelectorAll('.theme-card').forEach(c => c.classList.remove('active'));
+      selectedCard.classList.add('active');
+      renderFen(currentFen);
+    }
+
+    function showSearchAnimation() { if (searchAnim) searchAnim.style.display = 'flex'; }
+    function hideSearchAnimation() { if (searchAnim) searchAnim.style.display = 'none'; }
+
+    function startVersusAnimation(callback) {
+      versusOverlay.style.display = 'flex';
+      const clashAudio = new Audio('assets/sounds/success.wav');
+      clashAudio.play().catch(() => { });
+      setTimeout(() => { versusOverlay.style.display = 'none'; if (callback) callback(); }, 1800);
+    }
+
+    // ========== AUTHENTICATION & HTTP API ==========
+    async function apiRequest(endpoint, data) {
+      const response = await fetch(endpoint, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data)
+      });
+      return await response.json();
+    }
+
+    async function register(username, password) {
+      const result = await apiRequest('/api/register', { username, password });
+      if (result.success) {
+        currentToken = result.token;
+        currentUsername = username;
+        currentAvatar = result.user?.profile_pic || null;
+        localStorage.setItem('chess_token', currentToken);
+        localStorage.setItem('chess_username', username);
+        if (currentAvatar) localStorage.setItem('chess_avatar', currentAvatar);
+        await connectWebSocket(currentToken);
+      } else {
+        loginError.textContent = result.message || 'Registration failed';
       }
-      if (winner && myColor) {
-        if (myColor === winner) {
-          playSound('success');
-        } else if (myColor === loser) {
-          playSound('gameover');
+      return result.success;
+    }
+
+    if (togglePassword && passwordInput) {
+      togglePassword.addEventListener('click', function () {
+        const type = passwordInput.getAttribute('type') === 'password' ? 'text' : 'password';
+        passwordInput.setAttribute('type', type);
+        // Toggle the eye icon (optional: change to closed eye when visible)
+        this.textContent = type === 'password' ? '👁️' : '🙈';
+      });
+    }
+
+    async function login(username, password) {
+      const result = await apiRequest('/api/login', { username, password });
+      if (result.success) {
+        currentToken = result.token;
+        currentUsername = username;
+        currentAvatar = result.user?.profile_pic || null;
+        localStorage.setItem('chess_token', currentToken);
+        localStorage.setItem('chess_username', username);
+        if (currentAvatar) localStorage.setItem('chess_avatar', currentAvatar);
+        await connectWebSocket(currentToken);
+      } else {
+        loginError.textContent = result.message || 'Login failed';
+      }
+      return result.success;
+    }
+
+    async function autoLogin() {
+      const token = localStorage.getItem('chess_token');
+      const username = localStorage.getItem('chess_username');
+      if (!token || !username) {
+        setGuestMode();
+        showLoginModal();
+        return false;
+      }
+      const result = await apiRequest('/api/token_login', { token });
+      if (result.success) {
+        setLoggedInMode(token, username, result.user?.profile_pic || localStorage.getItem('chess_avatar'));
+        return true;
+      } else {
+        localStorage.removeItem('chess_token');
+        localStorage.removeItem('chess_username');
+        localStorage.removeItem('chess_avatar');
+        setGuestMode();
+        return false;
+      }
+    }
+
+
+    async function uploadAvatar(file) {
+      if (!currentToken) return;
+
+      // Find all avatar containers that might be visible (matchmaking overlay & menu slider)
+      const avatarContainers = document.querySelectorAll('.avatar-container');
+      let targetContainer = null;
+
+      // Prefer the one that contains the clicked edit button (or the first one)
+      for (const container of avatarContainers) {
+        if (container.closest('#matchmaking-profile') || container.closest('#menuContent')) {
+          targetContainer = container;
+          break;
+        }
+      }
+      if (!targetContainer && avatarContainers.length) targetContainer = avatarContainers[0];
+
+      // Show loading spinner
+      if (targetContainer) {
+        targetContainer.classList.add('avatar-loading');
+        const spinner = document.createElement('div');
+        spinner.className = 'spinner';
+        targetContainer.appendChild(spinner);
+        // Disable edit button if exists
+        const editBtn = targetContainer.querySelector('.avatar-edit-btn');
+        if (editBtn) editBtn.disabled = true;
+      }
+
+      const formData = new FormData();
+      formData.append('avatar', file);
+
+      try {
+        const response = await fetch('/api/upload_avatar', {
+          method: 'POST',
+          headers: { 'Authorization': `Bearer ${currentToken}` },
+          body: formData
+        });
+        const result = await response.json();
+
+        // Remove loading spinner and class
+        if (targetContainer) {
+          targetContainer.classList.remove('avatar-loading');
+          const spinnerEl = targetContainer.querySelector('.spinner');
+          if (spinnerEl) spinnerEl.remove();
+          const editBtn = targetContainer.querySelector('.avatar-edit-btn');
+          if (editBtn) editBtn.disabled = false;
+        }
+
+        if (result.success) {
+          currentAvatar = result.profile_pic;
+          localStorage.setItem('chess_avatar', currentAvatar);
+          // Update all avatar images in both matchmaking overlay and menu slider
+          document.querySelectorAll('.avatar-img').forEach(img => {
+            if (currentAvatar && currentAvatar !== 'null' && currentAvatar !== 'undefined') {
+              img.src = currentAvatar;
+            } else {
+              img.src = 'assets/default-avatar.png';
+            }
+          });
+          addChat('sys', 'Profile picture updated!');
+        } else {
+          addChat('sys', 'Avatar upload failed: ' + (result.message || 'unknown error'));
+        }
+      } catch (err) {
+        // Remove loading on error
+        if (targetContainer) {
+          targetContainer.classList.remove('avatar-loading');
+          const spinnerEl = targetContainer.querySelector('.spinner');
+          if (spinnerEl) spinnerEl.remove();
+          const editBtn = targetContainer.querySelector('.avatar-edit-btn');
+          if (editBtn) editBtn.disabled = false;
+        }
+        addChat('sys', 'Avatar upload error: ' + err.message);
+      }
+    }
+    function updateMenuProfile() {
+      const profileContainer = document.getElementById('matchmaking-profile');
+      if (!profileContainer) return;
+
+      const DEFAULT_AVATAR = 'assets/default-avatar.png';   // local default image
+      const isLoggedIn = currentUsername !== null && currentToken !== null;
+
+      if (isLoggedIn) {
+        // Use currentAvatar if it exists and is not empty/null, otherwise fallback to default
+        const avatarUrl = (currentAvatar && currentAvatar !== 'null' && currentAvatar !== 'undefined')
+          ? currentAvatar
+          : DEFAULT_AVATAR;
+
+        profileContainer.innerHTML = `
+  <div class="profile-row">
+    <div class="avatar-container">
+      <img src="${avatarUrl}" class="avatar-img" alt="avatar">
+      <button class="avatar-edit-btn" id="avatarEditBtnMM">✏️</button>
+    </div>
+    <div class="profile-username">${escapeHtml(currentUsername)}</div>
+    <img src="assets/logout.png" class="logout-icon" id="logoutIconMM" alt="logout" title="Logout">
+  </div>
+`;
+
+        // Avatar edit handler
+        const editBtn = profileContainer.querySelector('#avatarEditBtnMM');
+        if (editBtn) {
+          const fileInput = document.createElement('input');
+          fileInput.type = 'file';
+          fileInput.accept = 'image/png,image/jpeg,image/jpg';
+          fileInput.style.display = 'none';
+          fileInput.onchange = (e) => {
+            if (e.target.files && e.target.files[0]) uploadAvatar(e.target.files[0]);
+            fileInput.remove();
+          };
+          editBtn.onclick = (e) => {
+            e.stopPropagation();
+            document.body.appendChild(fileInput);
+            fileInput.click();
+          };
+        }
+
+        // Logout handler
+        const logoutIcon = profileContainer.querySelector('#logoutIconMM');
+        if (logoutIcon) {
+          logoutIcon.onclick = (e) => {
+            e.stopPropagation();
+            showLogoutConfirmation();
+          };
+        }
+      } else {
+        // Guest mode – also use the default avatar image (instead of text placeholder)
+        profileContainer.innerHTML = `
+      <div class="avatar-container">
+        <img src="${DEFAULT_AVATAR}" class="avatar-img" alt="avatar">
+      </div>
+      <div class="profile-info">
+        <div class="profile-username">Guest</div>
+        <button id="guestLoginBtnMM" class="upload-avatar-btn">🔑 Login / Register</button>
+      </div>
+    `;
+        const loginBtnEl = profileContainer.querySelector('#guestLoginBtnMM');
+        if (loginBtnEl) {
+          loginBtnEl.onclick = (e) => {
+            e.stopPropagation();
+            showLoginModal();
+          };
+        }
+      }
+
+      // Clean menu slider: remove any existing profile section and ensure only theme grid remains
+      const menuContent = document.getElementById('menuContent');
+      if (menuContent) {
+        const oldProfile = menuContent.querySelector('.profile-section');
+        if (oldProfile) oldProfile.remove();
+        if (!menuContent.querySelector('.theme-grid')) {
+          createThemeMenu();
         }
       }
     }
 
-    function connect() {
+    function showLogoutConfirmation() {
+      if (logoutModal) logoutModal.style.display = 'flex';
+    }
+
+    function hideLogoutConfirmation() {
+      if (logoutModal) logoutModal.style.display = 'none';
+    }
+
+    function performLogout() {
+      manualClose = true;
+      if (ws && ws.readyState === WebSocket.OPEN) ws.close();
+      localStorage.removeItem('chess_token');
+      localStorage.removeItem('chess_username');
+      localStorage.removeItem('chess_avatar');
+      currentToken = null;
+      currentUsername = null;
+      currentAvatar = null;
+      isAuthenticated = false;
+      hideLogoutConfirmation();
+      showLoginModal();
+      gameContainer.style.display = 'none';
+      matchmakingOverlay.style.display = 'flex';
+      if (findBtn) {
+        findBtn.disabled = true;
+        findBtn.style.opacity = '0.5';
+      }
+      if (matchStatus) matchStatus.innerText = '❌ Not logged in – use menu to login/register';
+      updateMenuProfile();
+    }
+
+    if (confirmYes) {
+      confirmYes.addEventListener('click', performLogout);
+    }
+    if (confirmNo) {
+      confirmNo.addEventListener('click', hideLogoutConfirmation);
+    }
+    if (logoutModal) {
+      logoutModal.addEventListener('click', (e) => {
+        if (e.target === logoutModal) hideLogoutConfirmation();
+      });
+    }
+    function connectWebSocket(token, isReconnect = false) {
+      // Prevent duplicate connections
+      if (ws && ws.readyState === WebSocket.OPEN) {
+        if (!isReconnect) ws.close();
+        else return;
+      }
+
+      // Clear any pending reconnect timers
+      if (reconnectTimeout) clearTimeout(reconnectTimeout);
+      pendingReconnect = false;
+      manualClose = false;   // new connection is not a manual close
+
       const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
       const url = `${protocol}//${window.location.host}/ws`;
       ws = new WebSocket(url);
-      ws.onopen = () => setStatus('Connected. Waiting...', 'gold', false);
-      ws.onmessage = ({ data }) => {
-        let msg;
-        try { msg = JSON.parse(data); } catch { return; }
-        switch (msg.type) {
-          case 'welcome':
-            myColor = msg.color;
-            buildBoard();
-            setStatus(`You are ${myColor}. Wait opponent`, 'gold', true);
-            renderFen(msg.fen);
-            break;
-          case 'state':
-            if (previousFen !== null && previousFen !== msg.fen && !gameOver) {
-              if (wasCapture(previousFen, msg.fen)) playSound('capture');
-              else playSound('move');
-            }
-            previousFen = msg.fen;
-            currentFen = msg.fen;
-            currentTurn = msg.turn;
-            legalMoves = msg.legal_moves || [];
-            inCheck = msg.in_check || false;
-            // Game over handling with differentiated UI per device
-            if (msg.game_over && msg.result && !gameOverPlayed) {
-              gameOverPlayed = true;
-              playGameEndSounds(msg.result);
-              showGameOverResult(msg.result);
-              setStatus('Game over: ' + msg.result, 'red', true);
-              gameOver = true;
-            } else if (msg.game_over && !gameOver) {
-              gameOver = true;
-              if (msg.result) setStatus('Game over: ' + msg.result, 'red', true);
-              else setStatus('Game over', 'red', true);
-              if (msg.result) showGameOverResult(msg.result);
+
+      ws.onopen = () => {
+        if (reconnectTimeout) clearTimeout(reconnectTimeout);
+        reconnectAttempts = 0;
+        pendingReconnect = false;
+        lastPongTime = Date.now();
+        setStatus('Connected', 'green', false);
+        ws.send(JSON.stringify({ type: 'auth', token: token }));
+
+        // Start client-side heartbeat checker
+        if (heartbeatInterval) clearInterval(heartbeatInterval);
+        heartbeatInterval = setInterval(() => {
+          if (ws.readyState === WebSocket.OPEN) {
+            // If no message received for 35 seconds, assume dead connection
+            if (Date.now() - lastPongTime > 35000) {
+              console.warn('No heartbeat received – closing connection');
+              manualClose = false;  // force reconnect
+              ws.close();
             } else {
-              gameOver = msg.game_over || false;
-              const yourTurn = myColor === currentTurn;
-              setStatus(yourTurn ? '⚡ Your turn' : `Waiting for ${currentTurn}...`, yourTurn ? 'green' : 'gold', true);
+              // Send a ping frame (browser will auto-respond with pong)
+              try { ws.ping(); } catch (e) { }
             }
-            if (msg.ready) addChat('sys', msg.message || 'Game started!');
-            if (msg.last_move) updateLastMove(msg.last_move);
-            renderFen(currentFen);
-            break;
-          case 'error': addChat('sys', '⚠ ' + msg.message); selected = null; renderFen(currentFen); break;
-          case 'chat':
-            addChat(msg.from, msg.text);
-            // Incoming chat from opponent -> play appropriate sound based on panel state
-            if (msg.from !== myColor) {
-              if (isChatPanelOpen()) {
-                playSound('chat_receive');
-              } else {
-                playSound('notification');
-              }
-            }
-            break;
+          }
+        }, 15000);
+      };
+
+      ws.onclose = (event) => {
+        // Stop heartbeat checker
+        if (heartbeatInterval) clearInterval(heartbeatInterval);
+        heartbeatInterval = null;
+
+        // If we manually closed (logout), do NOT reconnect
+        if (manualClose) {
+          setStatus('Disconnected', 'red', false);
+          const reconnectOverlay = document.getElementById('reconnect-overlay');
+          if (reconnectOverlay) reconnectOverlay.style.display = 'none';
+          return;
+        }
+
+        // For any other closure (clean or unclean), attempt to reconnect if we have a token
+        if (currentToken) {
+          console.warn('WebSocket closed – attempting to reconnect...');
+          setStatus('Connection lost – reconnecting...', 'red', false);
+          const reconnectOverlay = document.getElementById('reconnect-overlay');
+          if (reconnectOverlay) reconnectOverlay.style.display = 'block';
+
+          if (!pendingReconnect) {
+            pendingReconnect = true;
+            const maxDelay = 15000;
+            const delay = Math.min(1000 * Math.pow(1.5, reconnectAttempts), maxDelay);
+            reconnectTimeout = setTimeout(() => {
+              reconnectAttempts++;
+              connectWebSocket(currentToken, true);
+            }, delay);
+          }
+        } else {
+          setStatus('Disconnected', 'red', false);
+          const reconnectOverlay = document.getElementById('reconnect-overlay');
+          if (reconnectOverlay) reconnectOverlay.style.display = 'none';
         }
       };
-      ws.onclose = () => { setStatus('Disconnected. Refresh.', 'red', false); addChat('sys', 'Connection closed.'); gameOver = true; };
-      ws.onerror = () => setStatus('Connection error. Server?', 'red', false);
+
+      ws.onerror = () => {
+        setStatus('Connection error – reconnecting...', 'red', false);
+      };
+
+      ws.onmessage = ({ data }) => {
+        lastPongTime = Date.now();
+        let msg;
+        try { msg = JSON.parse(data); } catch { return; }
+
+        if (msg.type === 'auth_success') {
+          // Authentication successful
+          setStatus('Connected', 'green', false);
+          matchmakingOverlay.style.display = 'flex';
+          gameContainer.style.display = 'none';
+          updateMenuProfile();
+          createThemeMenu();
+          // Hide reconnecting overlay if shown
+          const reconnectOverlay = document.getElementById('reconnect-overlay');
+          if (reconnectOverlay) reconnectOverlay.style.display = 'none';
+        }
+        else if (msg.type === 'auth_error') {
+          loginError.textContent = msg.message;
+          if (ws) ws.close();
+          localStorage.removeItem('chess_token');
+          setStatus('Auth failed', 'red', false);
+        }
+        else if (msg.type === 'match_start') {
+          hideSearchAnimation();
+          myColor = msg.color;
+          currentFen = msg.fen;
+
+          let whiteUsername, whiteAvatar, blackUsername, blackAvatar;
+          if (myColor === 'white') {
+            whiteUsername = currentUsername;
+            whiteAvatar = currentAvatar;
+            blackUsername = msg.opponent;
+            blackAvatar = msg.opponentAvatar;
+          } else {
+            whiteUsername = msg.opponent;
+            whiteAvatar = msg.opponentAvatar;
+            blackUsername = currentUsername;
+            blackAvatar = currentAvatar;
+          }
+
+          function setVersusAvatar(imgEl, avatarData) {
+            const DEFAULT_AVATAR = 'assets/default-avatar.png';
+            if (avatarData && avatarData.startsWith('data:')) {
+              imgEl.src = avatarData;
+            } else if (avatarData && avatarData.startsWith('http')) {
+              imgEl.src = avatarData;
+            } else if (avatarData && avatarData !== 'null' && avatarData !== 'undefined') {
+              imgEl.src = avatarData;
+            } else {
+              imgEl.src = DEFAULT_AVATAR;
+            }
+            imgEl.style.display = 'inline-block';
+          }
+
+          document.getElementById('whiteUsernameSpan').innerText = whiteUsername || 'White Player';
+          document.getElementById('blackUsernameSpan').innerText = blackUsername || 'Black Player';
+          setVersusAvatar(document.getElementById('whiteAvatarImg'), whiteAvatar);
+          setVersusAvatar(document.getElementById('blackAvatarImg'), blackAvatar);
+
+          buildBoard();
+          setStatus(`You are ${myColor}. Game started!`, 'green', true);
+          renderFen(currentFen);
+          startVersusAnimation(() => {
+            matchmakingOverlay.style.display = 'none';
+            gameContainer.style.display = 'block';
+          });
+        }
+        else if (msg.type === 'state') {
+          if (previousFen !== null && previousFen !== msg.fen && !gameOver) {
+            if (wasCapture(previousFen, msg.fen)) playSound('capture');
+            else playSound('move');
+          }
+          previousFen = msg.fen;
+          currentFen = msg.fen;
+          currentTurn = msg.turn;
+          legalMoves = msg.legal_moves || [];
+          inCheck = msg.in_check || false;
+          if (msg.game_over && msg.result && !gameOverPlayed) {
+            gameOverPlayed = true;
+            playGameEndSounds(msg.result);
+            showGameOverResult(msg.result);
+            setStatus('Game over: ' + msg.result, 'red', true);
+            gameOver = true;
+          } else if (msg.game_over && !gameOver) {
+            gameOver = true;
+            if (msg.result) setStatus('Game over: ' + msg.result, 'red', true);
+            if (msg.result) showGameOverResult(msg.result);
+          } else {
+            gameOver = msg.game_over || false;
+            const yourTurn = myColor === currentTurn;
+            setStatus(yourTurn ? '⚡ Your turn' : `Waiting for ${currentTurn}...`, yourTurn ? 'green' : 'gold', true);
+          }
+          if (msg.last_move) updateLastMove(msg.last_move);
+          renderFen(currentFen);
+        }
+        else if (msg.type === 'chat') {
+          addChat(msg.from, msg.text);
+          if (msg.from !== myColor) {
+            if (isChatPanelOpen()) playSound('chat_receive');
+            else playSound('notification');
+          }
+        }
+        else if (msg.type === 'error') {
+          addChat('sys', '⚠ ' + msg.message);
+          selected = null;
+          renderFen(currentFen);
+        }
+        else if (msg.type === 'info') {
+          matchStatus.innerText = msg.message;
+        }
+      };
     }
 
-    window.onload = () => {
+    // Cancel search handler
+    if (cancelSearchBtn) {
+      cancelSearchBtn.addEventListener('click', () => {
+        hideSearchAnimation();
+        findBtn.disabled = false;
+        findBtn.style.opacity = '1';
+        matchStatus.innerText = 'Search cancelled';
+        if (ws && ws.readyState === WebSocket.OPEN) {
+          ws.send(JSON.stringify({ type: 'cancel_match' }));
+        }
+      });
+    }
+
+    // Find match button handler
+    if (findBtn) {
+      findBtn.addEventListener('click', () => {
+        if (ws && ws.readyState === WebSocket.OPEN) {
+          ws.send(JSON.stringify({ type: 'find_match' }));
+          findBtn.disabled = true;
+          findBtn.style.opacity = '0.6';
+          matchStatus.innerText = 'Searching for opponent...';
+          showSearchAnimation();
+        } else {
+          matchStatus.innerText = 'Not connected. Please refresh.';
+        }
+      });
+    }
+
+    // Login/Register handlers
+    function validateInputs() {
+      const username = loginUsername.value.trim();
+      const password = loginPassword.value.trim();
+      if (!username.match(/^[a-zA-Z0-9_]{3,20}$/)) {
+        loginError.textContent = 'Invalid username! Use 3-20 chars (letters, numbers, underscores).';
+        return null;
+      }
+      if (password.length < 4) {
+        loginError.textContent = 'Password must be at least 4 characters.';
+        return null;
+      }
+      return { username, password };
+    }
+
+    async function handleLogin() {
+      const creds = validateInputs();
+      if (!creds) return;
+      loginError.textContent = '';
+      loginBtn.disabled = true;
+      registerBtn.disabled = true;
+      const result = await apiRequest('/api/login', { username: creds.username, password: creds.password });
+      if (result.success) {
+        setLoggedInMode(result.token, creds.username, result.user?.profile_pic);
+      } else {
+        loginError.textContent = result.message || 'Login failed';
+        loginBtn.disabled = false;
+        registerBtn.disabled = false;
+      }
+    }
+
+    async function handleRegister() {
+      const creds = validateInputs();
+      if (!creds) return;
+      loginError.textContent = '';
+      loginBtn.disabled = true;
+      registerBtn.disabled = true;
+      const result = await apiRequest('/api/register', { username: creds.username, password: creds.password });
+      if (result.success) {
+        setLoggedInMode(result.token, creds.username, result.user?.profile_pic);
+      } else {
+        loginError.textContent = result.message || 'Registration failed';
+        loginBtn.disabled = false;
+        registerBtn.disabled = false;
+      }
+    }
+
+    function showLoginModal() {
+      const loginOverlay = document.getElementById('login-overlay');
+      if (loginOverlay) {
+        loginOverlay.style.display = 'flex';
+        document.getElementById('login-error').innerText = '';
+        document.getElementById('login-username').value = '';
+        document.getElementById('login-password').value = '';
+      }
+    }
+
+    function hideLoginModal() {
+      const loginOverlay = document.getElementById('login-overlay');
+      if (loginOverlay) loginOverlay.style.display = 'none';
+    }
+
+    function setGuestMode() {
+      isAuthenticated = false;
+      currentUsername = null;
+      currentToken = null;
+      currentAvatar = null;
+      manualClose = true;      // avoid reconnect attempts
+      if (findBtn) {
+        findBtn.disabled = true;
+        findBtn.style.opacity = '0.5';
+      }
+      matchStatus.innerText = '❌ Not logged in - use menu to login/register';
+      updateMenuProfile();
+      if (ws && ws.readyState === WebSocket.OPEN) ws.close();
+      ws = null;
+    }
+
+    function setLoggedInMode(token, username, avatar) {
+      currentToken = token;
+      currentUsername = username;
+      currentAvatar = avatar;
+      isAuthenticated = true;
+      localStorage.setItem('chess_token', token);
+      localStorage.setItem('chess_username', username);
+      if (avatar) localStorage.setItem('chess_avatar', avatar);
+      updateMenuProfile();
+      if (findBtn) {
+        findBtn.disabled = false;
+        findBtn.style.opacity = '1';
+      }
+      matchStatus.innerText = 'Connected. Ready to find match!';
+      hideLoginModal();
+      connectWebSocket(token);
+    }
+
+    loginBtn.addEventListener('click', handleLogin);
+    registerBtn.addEventListener('click', handleRegister);
+    [loginUsername, loginPassword].forEach(inp => inp.addEventListener('keypress', (e) => {
+      if (e.key === 'Enter') handleLogin();
+    }));
+    // ========== IMAGE ZOOM MODAL (WhatsApp style) ==========
+    (function initImageZoom() {
+      // Create modal elements
+      const modal = document.createElement('div');
+      modal.className = 'image-modal';
+      modal.innerHTML = `
+    <div class="modal-close">&times;</div>
+    <div class="modal-image-container">
+      <img class="modal-image" src="" alt="Zoomed avatar">
+    </div>
+  `;
+      document.body.appendChild(modal);
+
+      const modalImg = modal.querySelector('.modal-image');
+      const closeBtn = modal.querySelector('.modal-close');
+
+      function openZoom(imgSrc) {
+        if (!imgSrc) return;
+        modalImg.src = imgSrc;
+        modal.classList.add('show');
+        document.body.style.overflow = 'hidden';
+      }
+
+      function closeZoom() {
+        modal.classList.remove('show');
+        document.body.style.overflow = '';
+        modalImg.src = '';
+      }
+
+      // Close on backdrop click
+      modal.addEventListener('click', (e) => {
+        if (e.target === modal || e.target === closeBtn) {
+          closeZoom();
+        }
+      });
+
+      // Close on Escape key
+      document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape' && modal.classList.contains('show')) {
+          closeZoom();
+        }
+      });
+
+      // Event delegation for all avatar images (including dynamically added ones)
+      document.body.addEventListener('click', (e) => {
+        // Target avatar images: .avatar-img (matchmaking profile, menu profile) or .versus-avatar (versus overlay)
+        const avatar = e.target.closest('.avatar-img, .versus-avatar');
+        if (avatar && avatar.tagName === 'IMG' && avatar.src) {
+          e.preventDefault();
+          e.stopPropagation();
+          openZoom(avatar.src);
+        }
+      });
+    })();
+
+    // Initialize UI components that don't depend on game state
+    function initUI() {
       buildBoard();
       renderFen(currentFen);
       initChatToggle();
-      setupOutsideClickToClose();
-      connect();
-    };
+      setupOutsideClickToCloseChat();
+
+      const hamburgerBtn = document.getElementById('hamburgerBtn');
+      const closeMenuBtn = document.getElementById('closeMenuBtn');
+      const menuPanel = document.getElementById('menuPanel');
+
+      function closeMenuPanel() { menuPanel.classList.remove('open'); }
+      function openMenuPanel() {
+        menuPanel.classList.add('open');
+        if (chatSlider.classList.contains('open')) {
+          chatSlider.classList.remove('open');
+          onChatOpened();
+        }
+      }
+
+      if (hamburgerBtn) {
+        hamburgerBtn.addEventListener('click', (e) => {
+          e.stopPropagation();
+          if (menuPanel.classList.contains('open')) closeMenuPanel();
+          else openMenuPanel();
+        });
+      }
+      if (closeMenuBtn) closeMenuBtn.addEventListener('click', (e) => { e.stopPropagation(); closeMenuPanel(); });
+      document.addEventListener('click', (e) => { if (menuPanel.classList.contains('open') && !hamburgerBtn?.contains(e.target) && !menuPanel.contains(e.target)) closeMenuPanel(); });
+    }
+
+    initUI();
+
+    // Try auto-login on page load
+    autoLogin().catch(console.warn);
+
   </script>
 </body>
 
