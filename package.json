@@ -1,0 +1,16 @@
+{
+  "name": "chess-server",
+  "version": "1.0.0",
+  "description": "Node.js chess matchmaking server (JS port of the Python/aiohttp version)",
+  "main": "server.js",
+  "type": "commonjs",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "dependencies": {
+    "chess.js": "^1.0.0-beta.8",
+    "express": "^4.19.2",
+    "multer": "^2.2.0",
+    "ws": "^8.18.0"
+  }
+}
